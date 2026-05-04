@@ -1,0 +1,8 @@
+{
+  "name": "Sistema Cozinha",
+  "short_name": "Cozinha",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50"
+}
