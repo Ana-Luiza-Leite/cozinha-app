@@ -1,7 +1,7 @@
-import { initDB } from './db.js';
 import { renderRoute } from './router.js';
 
-window.onload = () => {
-    initDB();
-    renderRoute();
-};
+// Renderizar rota ao carregar
+renderRoute();
+
+// Renderizar rota quando mudar o histórico
+window.addEventListener('popstate', renderRoute);

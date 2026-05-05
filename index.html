@@ -2,22 +2,30 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cozinha Inteligente</title>
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!--<link rel="stylesheet" href="./assets/css/style.css">-->
+  <style>
+    body {
+      background-color: #f5f5f5;
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  </style>
 
-  <!--<script src="./vendor/xlsx.min.js"></script>-->
-  <script type="module" src="./assets/js/app.js"></script></head>
+  <script type="module" src="./assets/js/app.js"></script>
+</head>
 
 <body>
 
 <nav class="navbar navbar-dark bg-success">
   <div class="container-fluid">
-    <span class="navbar-brand">🍽️ Cozinha Inteligente</span>
+    <span class="navbar-brand" onclick="navigate('/')" style="cursor: pointer;">🍽️ Cozinha Inteligente</span>
   </div>
 </nav>
 
