@@ -1,5 +1,10 @@
 import { add, getAll } from '../db.js';
 
+import { importarExcel } from '../utils/excel.js';
+
+window.importarSaidaArquivo = function(file) {
+    importarExcel(file, "saida");
+};
 export function render() {
     return `
         <h2>Saídas</h2>
@@ -8,7 +13,7 @@ export function render() {
         <input id="qtd" class="form-control mb-2" placeholder="Quantidade">
 
         <button class="btn btn-danger" onclick="salvar()">Registrar</button>
-
+        <input type="file" onchange="importarSaidaArquivo(this.files[0])" class="form-control mb-3">
         <div id="lista" class="mt-4"></div>
     `;
 }

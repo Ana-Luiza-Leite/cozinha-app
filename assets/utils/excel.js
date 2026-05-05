@@ -1,4 +1,4 @@
-import { importarEntradas } from './importador.js';
+import { importarEntradas, importarSaidas } from './importador.js';
 
 export function importarExcel(file) {
     const reader = new FileReader();
@@ -7,12 +7,26 @@ export function importarExcel(file) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
 
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
+        console.log("Abas encontradas:", workbook.SheetNames);
 
-        console.log("Dados da planilha:", json);
+        workbook.SheetNames.forEach(nomeAba => {
 
-        importarEntradas(json);
+            const sheet = workbook.Sheets[nomeAba];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            console.log(`Importando aba: ${nomeAba}`, json);
+
+            // 🔥 IDENTIFICA AUTOMATICAMENTE
+            if (nomeAba.toUpperCase().includes("ENTRADA")) {
+                importarEntradas(json);
+            }
+
+            if (nomeAba.toUpperCase().includes("SAÍDA") || nomeAba.toUpperCase().includes("SAIDA")) {
+                importarSaidas(json);
+            }
+        });
+
+        alert("Importação completa de todas as abas!");
     };
 
     reader.readAsArrayBuffer(file);
