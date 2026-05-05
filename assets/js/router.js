@@ -10,7 +10,7 @@ export async function renderRoute() {
     const path = window.location.pathname;
     const page = routes[path] || "dashboard";
 
-    const module = await import(`./pages/${page}.js`);
+    const module = await import(`./pages/${page}`);
     document.getElementById("app").innerHTML = module.render();
 
     if (module.afterRender) module.afterRender();
