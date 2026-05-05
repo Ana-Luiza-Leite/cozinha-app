@@ -1,4 +1,4 @@
-import { add, getAll } from '../db.js';
+import { add, getAll } from '../js/db.js';
 
 import { importarExcel } from '../utils/excel.js';
 
