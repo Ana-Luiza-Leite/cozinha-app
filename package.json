@@ -1,0 +1,17 @@
+{
+  "name": "cozinha-app",
+  "version": "1.0.0",
+  "description": "Aplicação inteligente para gerenciar cozinha",
+  "type": "module",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "npx serve -l 3000"
+  },
+  "keywords": ["cozinha", "app"],
+  "author": "Ana-Luiza-Leite",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
