@@ -1,15 +1,16 @@
-import { add, getAll } from '../db.js';
+import { add, getAll } from '../js/db.js';
 import { importarExcel } from '../utils/excel.js';
 
-window.importarArquivo = function(file) {
-    importarExcel(file);
+window.importarArquivo = async function(file) {
+    await importarExcel(file, "entrada");
+    atualizarLista();
 };
 
 export function render() {
     return `
         <h2>Entradas</h2>
 
-        <input type="file" onchange="importarArquivo(this.files[0])" class="form-control mb-3">
+        <input type="file" accept=".xlsx,.xls,.csv" onchange="importarArquivo(this.files[0])" class="form-control mb-3">
 
         <input id="nome" class="form-control mb-2" placeholder="Insumo">
         <input id="qtd" class="form-control mb-2" placeholder="Quantidade">
@@ -24,8 +25,8 @@ export async function afterRender() {
     atualizarLista();
 }
 
-window.salvar = function () {
-    add("entradas", {
+window.salvar = async function () {
+    await add("entradas", {
         nome: document.getElementById("nome").value,
         qtd: Number(document.getElementById("qtd").value),
         data: new Date()

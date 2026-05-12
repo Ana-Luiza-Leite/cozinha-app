@@ -2,8 +2,9 @@ import { add, getAll } from '../js/db.js';
 
 import { importarExcel } from '../utils/excel.js';
 
-window.importarSaidaArquivo = function(file) {
-    importarExcel(file, "saida");
+window.importarSaidaArquivo = async function(file) {
+    await importarExcel(file, "saida");
+    atualizarLista();
 };
 export function render() {
     return `
@@ -13,7 +14,7 @@ export function render() {
         <input id="qtd" class="form-control mb-2" placeholder="Quantidade">
 
         <button class="btn btn-danger" onclick="salvar()">Registrar</button>
-        <input type="file" onchange="importarSaidaArquivo(this.files[0])" class="form-control mb-3">
+        <input type="file" accept=".xlsx,.xls,.csv" onchange="importarSaidaArquivo(this.files[0])" class="form-control mb-3">
         <div id="lista" class="mt-4"></div>
     `;
 }
@@ -22,8 +23,8 @@ export async function afterRender() {
     atualizarLista();
 }
 
-window.salvar = function () {
-    add("saidas", {
+window.salvar = async function () {
+    await add("saidas", {
         nome: document.getElementById("nome").value,
         qtd: Number(document.getElementById("qtd").value),
         data: new Date()

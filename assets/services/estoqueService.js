@@ -1,4 +1,4 @@
-import { getAll } from '../db.js';
+import { getAll } from '../js/db.js';
 
 export async function calcularEstoque() {
     const entradas = await getAll("entradas");

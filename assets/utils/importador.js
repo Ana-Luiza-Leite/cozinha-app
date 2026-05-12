@@ -1,47 +1,83 @@
-import { add } from '../db.js';
+import { add } from '../js/db.js';
 
-// 📥 IMPORTAR ENTRADAS
-export function importarEntradas(json) {
-    json.forEach(linha => {
+export async function importarEntradas(json) {
+    let total = 0;
 
+    for (const linha of json) {
         const registro = {
-            data: linha["DATA"],
-            origem: linha["ORIGEM"],
-            nome: linha["PRODUTO"],
-            qtd: Number(linha["QUANTIDADE"]),
-            unidade: linha["UNIDADE"],
-            valor_unitario: Number(linha["VALOR UNITÁRIO"] || 0),
-            valor_total: Number(linha["VALOR TOTAL"] || 0),
-            validade: linha["VALIDADE"],
-            nota: linha["NOTA"],
+            data: valor(linha, ["DATA"]),
+            origem: valor(linha, ["ORIGEM"]),
+            nome: valor(linha, ["PRODUTO", "INSUMO", "NOME"]),
+            qtd: numero(valor(linha, ["QUANTIDADE", "QTD"])),
+            unidade: valor(linha, ["UNIDADE", "UND"]),
+            valor_unitario: numero(valor(linha, ["VALOR UNITARIO", "VALOR UNITARIO", "VALOR UN"])),
+            valor_total: numero(valor(linha, ["VALOR TOTAL", "TOTAL"])),
+            validade: valor(linha, ["VALIDADE"]),
+            nota: valor(linha, ["NOTA", "NF"]),
             tipo: "entrada"
         };
 
-        if (!registro.nome) return;
+        if (!registro.nome) continue;
 
-        add("entradas", registro);
-    });
+        await add("entradas", registro);
+        total++;
+    }
 
-    alert("Entradas importadas com sucesso!");
+    return total;
 }
 
-// 📤 IMPORTAR SAÍDAS
-export function importarSaidas(json) {
-    json.forEach(linha => {
+export async function importarSaidas(json) {
+    let total = 0;
 
+    for (const linha of json) {
         const registro = {
-            data: linha["DATA SAÍDA"],
-            destino: linha["DESTINO"],
-            nome: linha["PRODUTO"],
-            qtd: Number(linha["QUANTIDADE"]),
-            unidade: linha["UNIDADE"],
+            data: valor(linha, ["DATA SAIDA", "DATA"]),
+            destino: valor(linha, ["DESTINO"]),
+            nome: valor(linha, ["PRODUTO", "INSUMO", "NOME"]),
+            qtd: numero(valor(linha, ["QUANTIDADE", "QTD"])),
+            unidade: valor(linha, ["UNIDADE", "UND"]),
             tipo: "saida"
         };
 
-        if (!registro.nome) return;
+        if (!registro.nome) continue;
 
-        add("saidas", registro);
-    });
+        await add("saidas", registro);
+        total++;
+    }
 
-    alert("Saídas importadas com sucesso!");
+    return total;
+}
+
+function valor(linha, nomes) {
+    const mapa = Object.entries(linha).reduce((acc, [chave, conteudo]) => {
+        acc[normalizarTexto(chave)] = conteudo;
+        return acc;
+    }, {});
+
+    for (const nome of nomes) {
+        const conteudo = mapa[normalizarTexto(nome)];
+        if (conteudo !== undefined && conteudo !== "") return conteudo;
+    }
+
+    return "";
+}
+
+function numero(valorOriginal) {
+    if (typeof valorOriginal === "number") return valorOriginal;
+
+    const texto = String(valorOriginal || "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+        .trim();
+
+    const resultado = Number(texto);
+    return Number.isFinite(resultado) ? resultado : 0;
+}
+
+function normalizarTexto(valorOriginal) {
+    return String(valorOriginal || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
 }

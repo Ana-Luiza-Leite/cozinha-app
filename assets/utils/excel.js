@@ -1,33 +1,55 @@
 import { importarEntradas, importarSaidas } from './importador.js';
 
-export function importarExcel(file) {
-    const reader = new FileReader();
+export function importarExcel(file, tipoPreferido = null) {
+    if (!file) return Promise.resolve();
 
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+    if (!window.XLSX) {
+        alert("Biblioteca de planilhas nao carregada. Verifique sua conexao e tente novamente.");
+        return Promise.reject(new Error("XLSX nao carregado"));
+    }
 
-        console.log("Abas encontradas:", workbook.SheetNames);
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
 
-        workbook.SheetNames.forEach(nomeAba => {
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                let total = 0;
 
-            const sheet = workbook.Sheets[nomeAba];
-            const json = XLSX.utils.sheet_to_json(sheet);
+                for (const nomeAba of workbook.SheetNames) {
+                    const sheet = workbook.Sheets[nomeAba];
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    const aba = normalizarTexto(nomeAba);
 
-            console.log(`Importando aba: ${nomeAba}`, json);
+                    if (tipoPreferido === "entrada" || aba.includes("ENTRADA")) {
+                        total += await importarEntradas(json);
+                        continue;
+                    }
 
-            // 🔥 IDENTIFICA AUTOMATICAMENTE
-            if (nomeAba.toUpperCase().includes("ENTRADA")) {
-                importarEntradas(json);
+                    if (tipoPreferido === "saida" || aba.includes("SAIDA")) {
+                        total += await importarSaidas(json);
+                    }
+                }
+
+                alert(`Importacao concluida. ${total} registro(s) importado(s).`);
+                resolve(total);
+            } catch (error) {
+                console.error("Erro ao importar planilha", error);
+                alert("Nao foi possivel importar a planilha. Confira o formato do arquivo.");
+                reject(error);
             }
+        };
 
-            if (nomeAba.toUpperCase().includes("SAÍDA") || nomeAba.toUpperCase().includes("SAIDA")) {
-                importarSaidas(json);
-            }
-        });
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(file);
+    });
+}
 
-        alert("Importação completa de todas as abas!");
-    };
-
-    reader.readAsArrayBuffer(file);
+function normalizarTexto(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
 }
