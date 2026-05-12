@@ -5,7 +5,10 @@ export function render() {
     return `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Relatorios</h2>
-            <button class="btn btn-outline-success" onclick="window.print()">Imprimir</button>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
+                <button class="btn btn-outline-success" onclick="window.print()">Imprimir</button>
+            </div>
         </div>
 
         <div class="row g-3 mb-4" id="resumo"></div>
@@ -46,7 +49,7 @@ export async function afterRender() {
     const movimentos = [
         ...entradas.map(item => ({ ...item, tipo: "Entrada" })),
         ...saidas.map(item => ({ ...item, tipo: "Saida" }))
-    ].sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+    ].sort((a, b) => obterData(b.data) - obterData(a.data));
 
     document.getElementById("movimentacoes").innerHTML = movimentos.length
         ? `
@@ -56,9 +59,14 @@ export async function afterRender() {
                         <tr>
                             <th>Tipo</th>
                             <th>Data</th>
+                            <th>Origem/Destino</th>
                             <th>Produto</th>
                             <th>Quantidade</th>
                             <th>Unidade</th>
+                            <th>Valor unitario</th>
+                            <th>Valor total</th>
+                            <th>Validade</th>
+                            <th>Nota</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,9 +74,14 @@ export async function afterRender() {
                             <tr>
                                 <td>${item.tipo}</td>
                                 <td>${formatarData(item.data)}</td>
+                                <td>${item.origem || item.destino || ""}</td>
                                 <td>${item.nome || ""}</td>
                                 <td>${item.qtd || 0}</td>
                                 <td>${item.unidade || ""}</td>
+                                <td>${formatarNumero(item.valor_unitario)}</td>
+                                <td>${formatarNumero(item.valor_total)}</td>
+                                <td>${formatarData(item.validade)}</td>
+                                <td>${item.nota || ""}</td>
                             </tr>
                         `).join("")}
                     </tbody>
@@ -96,8 +109,32 @@ function somarQtd(lista) {
 function formatarData(data) {
     if (!data) return "";
 
-    const dataFormatada = new Date(data);
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(data))) return data;
+
+    const dataFormatada = obterData(data);
     if (Number.isNaN(dataFormatada.getTime())) return String(data);
 
     return dataFormatada.toLocaleDateString("pt-BR");
+}
+
+function obterData(data) {
+    if (!data) return new Date(0);
+
+    const texto = String(data).trim();
+    const partes = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+    if (partes) {
+        return new Date(Number(partes[3]), Number(partes[2]) - 1, Number(partes[1]));
+    }
+
+    return new Date(data);
+}
+
+function formatarNumero(valor) {
+    if (valor === undefined || valor === null || valor === "") return "";
+
+    return Number(valor || 0).toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }

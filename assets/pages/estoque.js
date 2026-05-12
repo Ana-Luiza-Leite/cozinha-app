@@ -2,7 +2,10 @@ import { calcularEstoque } from '../services/estoqueService.js';
 
 export function render() {
     return `
-        <h2>Estoque Atual</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Estoque Atual</h2>
+            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
+        </div>
         <div id="lista"></div>
     `;
 }
