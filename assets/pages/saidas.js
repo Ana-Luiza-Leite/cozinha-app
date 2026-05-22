@@ -16,8 +16,8 @@ export function render() {
         <input id="nome" class="form-control mb-2" placeholder="Insumo">
         <input id="qtd" class="form-control mb-2" placeholder="Quantidade">
 
-        <button class="btn btn-danger" onclick="salvar()">Registrar</button>
         <input type="file" accept=".xlsx,.xls,.csv" onchange="importarSaidaArquivo(this.files[0])" class="form-control mt-3 mb-3">
+        <button class="btn btn-danger" onclick="salvar()">Registrar</button>
         <div id="lista" class="mt-4"></div>
     `;
 }
