@@ -7,6 +7,9 @@ export async function importarEntradas(json) {
         const registro = {
             data: valor(linha, ["DATA"]),
             origem: valor(linha, ["ORIGEM"]),
+            tipo_entrada: "compra",
+            fornecedor_id: "",
+            doador_id: "",
             nome: valor(linha, ["PRODUTO", "INSUMO", "NOME"]),
             qtd: numero(valor(linha, ["QUANTIDADE", "QTD"])),
             unidade: valor(linha, ["UNIDADE", "UND"]),
@@ -33,6 +36,9 @@ export async function importarSaidas(json) {
         const registro = {
             data: valor(linha, ["DATA SAIDA", "DATA"]),
             destino: valor(linha, ["DESTINO"]),
+            tipo_saida: "cozinha",
+            destino_id: "",
+            beneficiado_id: "",
             nome: valor(linha, ["PRODUTO", "INSUMO", "NOME"]),
             qtd: numero(valor(linha, ["QUANTIDADE", "QTD"])),
             unidade: valor(linha, ["UNIDADE", "UND"]),

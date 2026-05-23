@@ -3,6 +3,7 @@ const routes = {
     "/estoque": "estoque",
     "/entradas": "entradas",
     "/saidas": "saidas",
+    "/cadastros": "cadastros",
     "/relatorio": "relatorio",
     "/relatorios": "relatorio"
 };

@@ -13,17 +13,29 @@ export function render() {
             <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
         </div>
 
-        <input type="file" accept=".xlsx,.xls,.csv" onchange="importarArquivo(this.files[0])" class="form-control mb-3">
 
         <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label" for="tipo_entrada">Tipo de entrada</label>
+                <select id="tipo_entrada" class="form-select" onchange="alternarOrigemEntrada()">
+                    <option value="compra">Compra / fornecedor</option>
+                    <option value="doacao">Doacao / doador</option>
+                </select>
+            </div>
+
             <div class="col-md-3">
                 <label class="form-label" for="data">Data</label>
                 <input id="data" class="form-control" placeholder="dd/mm/aaaa">
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label" for="origem">Origem</label>
-                <input id="origem" class="form-control">
+            <div class="col-md-3" id="campo_fornecedor">
+                <label class="form-label" for="fornecedor">Fornecedor</label>
+                <select id="fornecedor" class="form-select"></select>
+            </div>
+
+            <div class="col-md-3 d-none" id="campo_doador">
+                <label class="form-label" for="doador">Doador</label>
+                <select id="doador" class="form-select"></select>
             </div>
 
             <div class="col-md-6">
@@ -38,7 +50,12 @@ export function render() {
 
             <div class="col-md-2">
                 <label class="form-label" for="unidade">Unidade</label>
-                <input id="unidade" class="form-control">
+                <select id="unidade" class="form-select">
+                    <option value="Quilo">Quilo</option>
+                    <option value="Grama">Grama</option>
+                    <option value="Duzia">Duzia</option>
+                    <option value="Litros">Litros</option>
+                </select>
             </div>
 
             <div class="col-md-2">
@@ -61,6 +78,8 @@ export function render() {
                 <input id="nota" class="form-control">
             </div>
         </div>
+        <br>
+            <input type="file" accept=".xlsx,.xls,.csv" onchange="importarArquivo(this.files[0])" class="form-control mb-3">
 
         <button class="btn btn-success mt-3" onclick="salvar()">Salvar entrada</button>
 
@@ -69,13 +88,25 @@ export function render() {
 }
 
 export async function afterRender() {
+    await carregarOpcoes();
+    alternarOrigemEntrada();
     atualizarLista();
 }
 
 window.salvar = async function () {
+    const tipoEntrada = document.getElementById("tipo_entrada").value;
+    const fornecedorSelect = document.getElementById("fornecedor");
+    const doadorSelect = document.getElementById("doador");
+    const origem = tipoEntrada === "doacao"
+        ? doadorSelect.options[doadorSelect.selectedIndex]?.text || ""
+        : fornecedorSelect.options[fornecedorSelect.selectedIndex]?.text || "";
+
     const registro = {
         data: document.getElementById("data").value,
-        origem: document.getElementById("origem").value,
+        origem,
+        tipo_entrada: tipoEntrada,
+        fornecedor_id: tipoEntrada === "compra" ? fornecedorSelect.value : "",
+        doador_id: tipoEntrada === "doacao" ? doadorSelect.value : "",
         nome: document.getElementById("nome").value,
         qtd: Number(document.getElementById("qtd").value),
         unidade: document.getElementById("unidade").value,
@@ -88,6 +119,11 @@ window.salvar = async function () {
 
     if (!registro.nome) {
         alert("Informe o produto da entrada.");
+        return;
+    }
+
+    if (!registro.origem) {
+        alert(tipoEntrada === "doacao" ? "Selecione um doador." : "Selecione um fornecedor.");
         return;
     }
 
@@ -107,6 +143,7 @@ async function atualizarLista() {
                         <tr>
                             <th>Data</th>
                             <th>Origem</th>
+                            <th>Tipo</th>
                             <th>Produto</th>
                             <th>Quantidade</th>
                             <th>Unidade</th>
@@ -121,6 +158,7 @@ async function atualizarLista() {
                             <tr>
                                 <td>${d.data || ""}</td>
                                 <td>${d.origem || ""}</td>
+                                <td>${d.tipo_entrada === "doacao" ? "Doacao" : "Compra"}</td>
                                 <td>${d.nome || ""}</td>
                                 <td>${d.qtd || 0}</td>
                                 <td>${d.unidade || ""}</td>
@@ -138,8 +176,32 @@ async function atualizarLista() {
 }
 
 function limparFormulario() {
-    ["data", "origem", "nome", "qtd", "unidade", "valor_unitario", "valor_total", "validade", "nota"]
+    ["data", "nome", "qtd", "valor_unitario", "valor_total", "validade", "nota"]
         .forEach(id => document.getElementById(id).value = "");
+    document.getElementById("unidade").value = "Quilo";
+}
+
+window.alternarOrigemEntrada = function () {
+    const tipoEntrada = document.getElementById("tipo_entrada").value;
+    document.getElementById("campo_fornecedor").classList.toggle("d-none", tipoEntrada === "doacao");
+    document.getElementById("campo_doador").classList.toggle("d-none", tipoEntrada !== "doacao");
+};
+
+async function carregarOpcoes() {
+    const [fornecedores, doadores] = await Promise.all([
+        getAll("fornecedores"),
+        getAll("doadores")
+    ]);
+
+    preencherSelect("fornecedor", fornecedores, "Cadastre um fornecedor primeiro");
+    preencherSelect("doador", doadores, "Cadastre um doador primeiro");
+}
+
+function preencherSelect(id, dados, vazio) {
+    const select = document.getElementById(id);
+    select.innerHTML = dados.length
+        ? dados.map(item => `<option value="${item.id}">${item.nome}</option>`).join("")
+        : `<option value="">${vazio}</option>`;
 }
 
 function formatarNumero(valor) {

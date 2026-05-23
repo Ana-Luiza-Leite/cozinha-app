@@ -30,6 +30,13 @@ export function render() {
                 </div>
             </div>
 
+            <div class="col-md-3">
+                <div class="card p-3 text-center">
+                    <h5>Cadastros</h5>
+                    <button class="btn btn-success" onclick="navigate('/cadastros')">Ver</button>
+                </div>
+            </div>
+
         </div>
     `;
 }
