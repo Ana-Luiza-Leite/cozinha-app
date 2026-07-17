@@ -10,7 +10,7 @@ export function render() {
     return `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Entradas</h2>
-            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
+            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao início</button>
         </div>
 
 

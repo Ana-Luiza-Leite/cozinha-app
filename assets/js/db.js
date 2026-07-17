@@ -1,5 +1,5 @@
 const DB_NAME = "cozinhaDB";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const FORNECEDORES_INICIAIS = [
     { nome: "COOPERFAMILIA", cnpj: "09.263.339/0001-55" },
@@ -40,7 +40,8 @@ export function initDB() {
                 "fornecedores",
                 "doadores",
                 "destinos",
-                "beneficiados"
+                "beneficiados",
+                "fichasTecnicas"
             ].forEach((storeName) => {
                 if (!database.objectStoreNames.contains(storeName)) {
                     database.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });

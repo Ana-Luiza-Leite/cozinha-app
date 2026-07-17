@@ -9,8 +9,8 @@ window.importarSaidaArquivo = async function(file) {
 export function render() {
     return `
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Saidas</h2>
-            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
+            <h2 class="mb-0">Saídas</h2>
+            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao início</button>
         </div>
 
         <div class="row g-2">
@@ -60,7 +60,7 @@ export function render() {
         </div>
 
         <input type="file" accept=".xlsx,.xls,.csv" onchange="importarSaidaArquivo(this.files[0])" class="form-control mt-3 mb-3">
-        <button class="btn btn-danger" onclick="salvar()">Registrar saida</button>
+        <button class="btn btn-danger" onclick="salvar()">Registrar saída</button>
         <div id="lista" class="mt-4"></div>
     `;
 }
@@ -85,7 +85,7 @@ window.salvar = async function () {
     }
 
     if (!destino) {
-        alert(tipoSaida === "doacao" ? "Selecione o beneficiado da doacao." : "Selecione a cozinha destino.");
+        alert(tipoSaida === "doacao" ? "Selecione o beneficiado da doação." : "Selecione a cozinha destino.");
         return;
     }
 
@@ -137,7 +137,7 @@ async function atualizarLista() {
                 </table>
             </div>
         `
-        : `<div class="alert alert-info">Nenhuma saida registrada.</div>`;
+        : `<div class="alert alert-info">Nenhuma saída registrada.</div>`;
 }
 
 window.alternarDestinoSaida = function () {

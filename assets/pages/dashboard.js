@@ -18,15 +18,22 @@ export function render() {
 
             <div class="col-md-3">
                 <div class="card p-3 text-center">
-                    <h5>Saidas</h5>
+                    <h5>Saídas</h5>
                     <button class="btn btn-success" onclick="navigate('/saidas')">Ver</button>
                 </div>
             </div>
 
             <div class="col-md-3">
                 <div class="card p-3 text-center">
-                    <h5>Relatorios</h5>
+                    <h5>Relatórios</h5>
                     <button class="btn btn-success" onclick="navigate('/relatorios')">Ver</button>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card p-3 text-center">
+                    <h5>Fichas técnicas</h5>
+                    <button class="btn btn-success" onclick="navigate('/fichas-tecnicas')">Ver</button>
                 </div>
             </div>
 

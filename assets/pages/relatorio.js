@@ -4,9 +4,9 @@ import { calcularEstoque } from '../services/estoqueService.js';
 export function render() {
     return `
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Relatorios</h2>
+            <h2 class="mb-0">Relatórios</h2>
             <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
+                <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao início</button>
                 <button class="btn btn-outline-success" onclick="window.print()">Imprimir</button>
             </div>
         </div>
@@ -16,7 +16,7 @@ export function render() {
         <h4>Estoque atual</h4>
         <div id="estoque" class="mb-4"></div>
 
-        <h4>Movimentacoes</h4>
+        <h4>Movimentações</h4>
         <div id="movimentacoes"></div>
     `;
 }
