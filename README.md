@@ -31,9 +31,20 @@ Principais telas:
 - `assets/pages/cadastros.js`: cadastro de fornecedores, doadores, destinos e beneficiados.
 - `assets/pages/relatorio.js`: area de relatorios.
 
+## Como executar
+
+1. Baixe ou clone este repositorio.
+2. Abra o arquivo `index.html` no navegador.
+
+O app usa rotas com hash, como `#/estoque`, para funcionar mesmo quando o
+arquivo `index.html` e aberto diretamente por duplo clique.
+
+Alguns navegadores podem restringir `type="module"` e importacoes em `file://`.
+Se isso acontecer, use a opcao com servidor local abaixo.
+
 ## O que precisa ter instalado
 
-Para rodar o projeto, e necessario ter:
+Para rodar com servidor local, e necessario ter:
 
 - Node.js instalado.
 - npm instalado.
@@ -42,7 +53,7 @@ Para rodar o projeto, e necessario ter:
 
 As dependencias do projeto ficam no `package.json`.
 
-## Como rodar
+## Como rodar com servidor local
 
 Abra o terminal dentro da pasta do projeto:
 

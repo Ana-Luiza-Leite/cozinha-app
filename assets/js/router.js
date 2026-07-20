@@ -9,8 +9,13 @@ const routes = {
     "/relatorios": "relatorio"
 };
 
+function getCurrentPath() {
+    const hashPath = window.location.hash.replace(/^#/, "");
+    return hashPath.replace(/\/$/, "") || "/";
+}
+
 export async function renderRoute() {
-    const path = window.location.pathname.replace(/\/$/, "") || "/";
+    const path = getCurrentPath();
     const page = routes[path] || "dashboard";
 
     try {
@@ -29,8 +34,8 @@ export async function renderRoute() {
 }
 
 export function navigate(path) {
-    history.pushState({}, "", path);
-    renderRoute();
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    window.location.hash = normalizedPath;
 }
 
 window.navigate = navigate;

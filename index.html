@@ -21,7 +21,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="./assets/js/app.js"></script>
 
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#4CAF50">
 </head>
 
@@ -33,7 +33,7 @@
     <div class="d-flex gap-2 flex-wrap">
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/estoque')">Estoque</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/entradas')">Entradas</button>
-      <button class="btn btn-outline-light btn-sm" onclick="navigate('/saídas')">Saídas</button>
+      <button class="btn btn-outline-light btn-sm" onclick="navigate('/saidas')">Saídas</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/fichas-tecnicas')">Fichas técnicas</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/cadastros')">Cadastros</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/relatorios')">Relatórios</button>
@@ -44,9 +44,9 @@
 <div class="container mt-4" id="app"></div>
 
 <script>
-  if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('./service-worker.js')
         .then(reg => console.log('ServiceWorker registrado:', reg))
         .catch(err => console.error('Falha ao registrar ServiceWorker:', err));
     });
