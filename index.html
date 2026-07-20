@@ -20,6 +20,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="./assets/js/app.js"></script>
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4CAF50">
 </head>
 
 <body>
@@ -39,6 +42,16 @@
 </nav>
 
 <div class="container mt-4" id="app"></div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('ServiceWorker registrado:', reg))
+        .catch(err => console.error('Falha ao registrar ServiceWorker:', err));
+    });
+  }
+</script>
 
 </body>
 </html>
