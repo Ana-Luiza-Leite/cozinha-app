@@ -141,7 +141,7 @@ async function salvarCadastro(storeName) {
         
         const novoNomeNormalizado = normalizarTexto(registro.nome);
         
-        if (nomesExistentes.includes(nomoNomeNormalizado)) {
+        if (nomesExistentes.includes(novoNomeNormalizado)) {
             alert(`O insumo "${registro.nome}" já foi cadastrado. Nomes duplicados não são permitidos.`);
             return;
         }
