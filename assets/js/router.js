@@ -11,15 +11,16 @@ const routes = {
 };
 
 // Importações pré-carregadas para evitar problemas com caminhos dinâmicos
+// assets/js/router.js (trecho)
 const pageModules = {
-    dashboard: () => import('./pages/dashboard.js'),
-    estoque: () => import('./pages/estoque.js'),
-    entradas: () => import('./pages/entradas.js'),
-    saidas: () => import('./pages/saidas.js'),
-    fichasTecnicas: () => import('./pages/fichasTecnicas.js'),
-    cadastros: () => import('./pages/cadastros.js'),
-    relatorio: () => import('./pages/relatorio.js'),
-    cardapio: () => import('./pages/cardapio.js')
+    dashboard: () => import('../pages/dashboard.js'),
+    estoque: () => import('../pages/estoque.js'),
+    entradas: () => import('../pages/entradas.js'),
+    saidas: () => import('../pages/saidas.js'),
+    fichasTecnicas: () => import('../pages/fichasTecnicas.js'),
+    cadastros: () => import('../pages/cadastros.js'),
+    relatorio: () => import('../pages/relatorio.js'),
+    cardapio: () => import('../pages/cardapio.js')
 };
 
 function getCurrentPath() {
