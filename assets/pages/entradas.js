@@ -40,8 +40,13 @@ export function render() {
             </div>
 
             <div class="col-md-6">
-                <label class="form-label" for="nome">Produto</label>
-                <input id="nome" class="form-control">
+                <label class="form-label" for="insumo_select">Insumo / Produto</label>
+                <select id="insumo_select" class="form-select">
+                    <option value="">Selecione um insumo cadastrado</option>
+                </select>
+                <small class="form-text text-muted">
+                    Você só pode selecionar insumos já cadastrados na tela de Cadastros
+                </small>
             </div>
 
             <div class="col-md-2">
@@ -97,6 +102,15 @@ export async function afterRender() {
 }
 
 window.salvar = async function () {
+    const insumoSelect = document.getElementById("insumo_select");
+    const nomeInsumo = insumoSelect.options[insumoSelect.selectedIndex]?.text || "";
+    const insumoId = insumoSelect.value;
+
+    if (!insumoId) {
+        alert("Selecione um insumo cadastrado.");
+        return;
+    }
+
     const tipoEntrada = document.getElementById("tipo_entrada").value;
     const fornecedorSelect = document.getElementById("fornecedor");
     const doadorSelect = document.getElementById("doador");
@@ -110,7 +124,8 @@ window.salvar = async function () {
         tipo_entrada: tipoEntrada,
         fornecedor_id: tipoEntrada === "compra" ? fornecedorSelect.value : "",
         doador_id: tipoEntrada === "doacao" ? doadorSelect.value : "",
-        nome: document.getElementById("nome").value,
+        insumo_id: Number(insumoId),
+        nome: nomeInsumo,
         qtd: Number(document.getElementById("qtd").value),
         unidade: document.getElementById("unidade").value,
         valor_unitario: Number(document.getElementById("valor_unitario").value || 0),
@@ -119,11 +134,6 @@ window.salvar = async function () {
         nota: document.getElementById("nota").value,
         tipo: "entrada"
     };
-
-    if (!registro.nome) {
-        alert("Informe o produto da entrada.");
-        return;
-    }
 
     if (!registro.origem) {
         alert(tipoEntrada === "doacao" ? "Selecione um doador." : "Selecione um fornecedor.");
@@ -147,7 +157,7 @@ async function atualizarLista() {
                             <th>Data</th>
                             <th>Origem</th>
                             <th>Tipo</th>
-                            <th>Produto</th>
+                            <th>Insumo</th>
                             <th>Quantidade</th>
                             <th>Unidade</th>
                             <th>Valor unitario</th>
@@ -179,9 +189,10 @@ async function atualizarLista() {
 }
 
 function limparFormulario() {
-    ["data", "nome", "qtd", "valor_unitario", "valor_total", "validade", "nota"]
+    ["data", "qtd", "valor_unitario", "valor_total", "validade", "nota"]
         .forEach(id => document.getElementById(id).value = "");
     document.getElementById("unidade").value = "Quilo";
+    document.getElementById("insumo_select").value = "";
 }
 
 window.alternarOrigemEntrada = function () {
@@ -191,13 +202,15 @@ window.alternarOrigemEntrada = function () {
 };
 
 async function carregarOpcoes() {
-    const [fornecedores, doadores] = await Promise.all([
+    const [fornecedores, doadores, insumos] = await Promise.all([
         getAll("fornecedores"),
-        getAll("doadores")
+        getAll("doadores"),
+        getAll("insumos")
     ]);
 
     preencherSelect("fornecedor", fornecedores, "Cadastre um fornecedor primeiro");
     preencherSelect("doador", doadores, "Cadastre um doador primeiro");
+    preencherSelectInsumo("insumo_select", insumos);
 }
 
 function preencherSelect(id, dados, vazio) {
@@ -205,6 +218,15 @@ function preencherSelect(id, dados, vazio) {
     select.innerHTML = dados.length
         ? dados.map(item => `<option value="${item.id}">${item.nome}</option>`).join("")
         : `<option value="">${vazio}</option>`;
+}
+
+function preencherSelectInsumo(id, insumos) {
+    const select = document.getElementById(id);
+    select.innerHTML = `<option value="">Selecione um insumo cadastrado</option>` +
+        (insumos.length
+            ? insumos.map(item => `<option value="${item.id}">${item.nome}</option>`).join("")
+            : `<option value="" disabled>Nenhum insumo cadastrado</option>`
+        );
 }
 
 function formatarNumero(valor) {
