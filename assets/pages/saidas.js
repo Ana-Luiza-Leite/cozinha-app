@@ -81,46 +81,57 @@ export async function afterRender() {
 }
 
 window.salvar = async function () {
-    const tipoSaida = document.getElementById("tipo_saida").value;
-    const destinoSelect = document.getElementById("destino");
-    const beneficiadoSelect = document.getElementById("beneficiado");
-    const destino = tipoSaida === "doacao"
-        ? beneficiadoSelect.options[beneficiadoSelect.selectedIndex]?.text || ""
-        : destinoSelect.options[destinoSelect.selectedIndex]?.text || "";
+    try {
+        const tipoSaida = document.getElementById("tipo_saida").value;
+        const destinoSelect = document.getElementById("destino");
+        const beneficiadoSelect = document.getElementById("beneficiado");
+        const destino = tipoSaida === "doacao"
+            ? beneficiadoSelect.options[beneficiadoSelect.selectedIndex]?.text || ""
+            : destinoSelect.options[destinoSelect.selectedIndex]?.text || "";
 
-    const nomeProduto = document.getElementById("nome").value;
+        const nomeProduto = document.getElementById("nome").value;
+        const qtd = Number(document.getElementById("qtd").value);
 
-    if (!nomeProduto) {
-        alert("Informe o produto da saida.");
-        return;
+        if (!nomeProduto) {
+            alert("Informe o produto da saida.");
+            return;
+        }
+
+        // garantir que o produto exista nos cadastrados
+        const produtoExiste = produtosCadastrados.some(p => normalizarTexto(p.nome) === normalizarTexto(nomeProduto));
+        if (!produtoExiste) {
+            alert("Selecione um produto cadastrado na lista.");
+            return;
+        }
+
+        if (!destino) {
+            alert(tipoSaida === "doacao" ? "Selecione o beneficiado da doação." : "Selecione a cozinha destino.");
+            return;
+        }
+
+        if (!Number.isFinite(qtd) || qtd <= 0) {
+            alert("Informe uma quantidade válida maior que zero.");
+            return;
+        }
+
+        await add("saidas", {
+            nome: nomeProduto,
+            qtd,
+            unidade: document.getElementById("unidade").value,
+            data: formatarData(document.getElementById("data").value),
+            destino,
+            tipo_saida: tipoSaida,
+            destino_id: tipoSaida === "cozinha" ? destinoSelect.value : "",
+            beneficiado_id: tipoSaida === "doacao" ? beneficiadoSelect.value : "",
+            tipo: "saida"
+        });
+
+        limparFormulario();
+        atualizarLista();
+    } catch (err) {
+        console.error("Erro ao registrar saída:", err);
+        alert("Erro ao registrar a saída. Abra o console do navegador para ver detalhes.");
     }
-
-    // garantir que o produto exista nos cadastrados
-    const produtoExiste = produtosCadastrados.some(p => normalizarTexto(p.nome) === normalizarTexto(nomeProduto));
-    if (!produtoExiste) {
-        alert("Selecione um produto cadastrado na lista.");
-        return;
-    }
-
-    if (!destino) {
-        alert(tipoSaida === "doacao" ? "Selecione o beneficiado da doação." : "Selecione a cozinha destino.");
-        return;
-    }
-
-    await add("saidas", {
-        nome: nomeProduto,
-        qtd: Number(document.getElementById("qtd").value),
-        unidade: document.getElementById("unidade").value,
-        data: formatarData(document.getElementById("data").value),
-        destino,
-        tipo_saida: tipoSaida,
-        destino_id: tipoSaida === "cozinha" ? destinoSelect.value : "",
-        beneficiado_id: tipoSaida === "doacao" ? beneficiadoSelect.value : "",
-        tipo: "saida"
-    });
-
-    limparFormulario();
-    atualizarLista();
 };
 
 async function atualizarLista() {
@@ -256,7 +267,7 @@ function normalizarUnidade(unidade) {
 function normalizarTexto(valor) {
     return String(valor || "")
         .normalize("NFD")
-        .replace(/[[\u0300-\u036f]]/g, "")
+        .replace(/[\u0300-\u036f]/g, "")
         .toUpperCase()
         .trim();
 }
