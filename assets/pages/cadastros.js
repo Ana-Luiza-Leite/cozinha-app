@@ -133,6 +133,20 @@ async function salvarCadastro(storeName) {
         return;
     }
 
+    // Validação especial para insumos: verificar duplicação normalizada
+    if (storeName === "insumos") {
+        const nomesExistentes = (dadosPorTipo["insumos"] || [])
+            .filter(item => item.id !== idsEmEdicao[storeName])
+            .map(item => normalizarTexto(item.nome));
+        
+        const novoNomeNormalizado = normalizarTexto(registro.nome);
+        
+        if (nomesExistentes.includes(nomoNomeNormalizado)) {
+            alert(`O insumo "${registro.nome}" já foi cadastrado. Nomes duplicados não são permitidos.`);
+            return;
+        }
+    }
+
     if (idsEmEdicao[storeName]) {
         registro.id = idsEmEdicao[storeName];
         await put(storeName, registro);
@@ -306,7 +320,7 @@ function normalizarTexto(valor) {
     return String(valor || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
+        .toUpperCase()
         .trim();
 }
 
