@@ -42,8 +42,10 @@ export function render() {
 
             <div class="col-md-4">
                 <label class="form-label" for="nome">Produto</label>
-                <input id="nome" class="form-control" list="produtos" placeholder="Insumo">
-                <datalist id="produtos"></datalist>
+                <!-- trocar input livre por select para obrigar escolher produto cadastrado -->
+                <select id="nome" class="form-select">
+                    <option value="">Selecione um insumo</option>
+                </select>
             </div>
 
             <div class="col-md-2">
@@ -72,8 +74,8 @@ export function render() {
 export async function afterRender() {
     aplicarMascaraData("data");
     await carregarOpcoes();
+    // agora apenas change é necessário (select)
     document.getElementById("nome").addEventListener("change", preencherUnidadeProduto);
-    document.getElementById("nome").addEventListener("input", preencherUnidadeProduto);
     alternarDestinoSaida();
     atualizarLista();
 }
@@ -86,8 +88,17 @@ window.salvar = async function () {
         ? beneficiadoSelect.options[beneficiadoSelect.selectedIndex]?.text || ""
         : destinoSelect.options[destinoSelect.selectedIndex]?.text || "";
 
-    if (!document.getElementById("nome").value) {
+    const nomeProduto = document.getElementById("nome").value;
+
+    if (!nomeProduto) {
         alert("Informe o produto da saida.");
+        return;
+    }
+
+    // garantir que o produto exista nos cadastrados
+    const produtoExiste = produtosCadastrados.some(p => normalizarTexto(p.nome) === normalizarTexto(nomeProduto));
+    if (!produtoExiste) {
+        alert("Selecione um produto cadastrado na lista.");
         return;
     }
 
@@ -97,7 +108,7 @@ window.salvar = async function () {
     }
 
     await add("saidas", {
-        nome: document.getElementById("nome").value,
+        nome: nomeProduto,
         qtd: Number(document.getElementById("qtd").value),
         unidade: document.getElementById("unidade").value,
         data: formatarData(document.getElementById("data").value),
@@ -165,11 +176,11 @@ async function carregarOpcoes() {
     preencherSelect("beneficiado", beneficiados, "Cadastre um beneficiado primeiro");
 
     produtosCadastrados = montarProdutosCadastrados(insumos, entradas);
-    const produtos = produtosCadastrados.map(item => item.nome);
 
-    document.getElementById("produtos").innerHTML = produtos
-        .map(nome => `<option value="${escaparHtml(nome)}"></option>`)
-        .join("");
+    // popular select de produtos (nome como value)
+    const selectProdutos = document.getElementById("nome");
+    selectProdutos.innerHTML = `<option value="">Selecione um insumo</option>` +
+        produtosCadastrados.map(item => `<option value="${escaparHtml(item.nome)}">${escaparHtml(item.nome)}</option>`).join("");
 }
 
 function montarProdutosCadastrados(insumos, entradas) {
@@ -245,7 +256,7 @@ function normalizarUnidade(unidade) {
 function normalizarTexto(valor) {
     return String(valor || "")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[[\u0300-\u036f]]/g, "")
         .toUpperCase()
         .trim();
 }
