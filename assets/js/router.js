@@ -6,7 +6,20 @@ const routes = {
     "/fichas-tecnicas": "fichasTecnicas",
     "/cadastros": "cadastros",
     "/relatorio": "relatorio",
-    "/relatorios": "relatorio"
+    "/relatorios": "relatorio",
+    "/cardapio": "cardapio"
+};
+
+// Importações pré-carregadas para evitar problemas com caminhos dinâmicos
+const pageModules = {
+    dashboard: () => import('./pages/dashboard.js'),
+    estoque: () => import('./pages/estoque.js'),
+    entradas: () => import('./pages/entradas.js'),
+    saidas: () => import('./pages/saidas.js'),
+    fichasTecnicas: () => import('./pages/fichasTecnicas.js'),
+    cadastros: () => import('./pages/cadastros.js'),
+    relatorio: () => import('./pages/relatorio.js'),
+    cardapio: () => import('./pages/cardapio.js')
 };
 
 function getCurrentPath() {
@@ -16,18 +29,32 @@ function getCurrentPath() {
 
 export async function renderRoute() {
     const path = getCurrentPath();
-    const page = routes[path] || "dashboard";
+    const pageName = routes[path] || "dashboard";
 
     try {
-        const module = await import(`../pages/${page}.js`);
-        document.getElementById("app").innerHTML = module.render();
+        // Usa importação pré-definida ao invés de dinâmica
+        if (!pageModules[pageName]) {
+            throw new Error(`Página ${pageName} não encontrada`);
+        }
 
-        if (module.afterRender) await module.afterRender();
+        const module = await pageModules[pageName]();
+        
+        const appContainer = document.getElementById("app");
+        if (!appContainer) {
+            console.error("Container #app não encontrado");
+            return;
+        }
+
+        appContainer.innerHTML = module.render();
+
+        if (module.afterRender && typeof module.afterRender === 'function') {
+            await module.afterRender();
+        }
     } catch (error) {
-        console.error("Erro ao carregar rota", error);
+        console.error("Erro ao carregar rota:", error);
         document.getElementById("app").innerHTML = `
             <div class="alert alert-danger">
-                Nao foi possivel carregar esta pagina.
+                Não foi possível carregar esta página: ${error.message}
             </div>
         `;
     }
