@@ -1,11 +1,12 @@
 import { add } from '../js/db.js';
+import { formatarData } from './data.js';
 
 export async function importarEntradas(json) {
     let total = 0;
 
     for (const linha of json) {
         const registro = {
-            data: valor(linha, ["DATA"]),
+            data: formatarData(valor(linha, ["DATA"])),
             origem: valor(linha, ["ORIGEM"]),
             tipo_entrada: "compra",
             fornecedor_id: "",
@@ -15,7 +16,7 @@ export async function importarEntradas(json) {
             unidade: valor(linha, ["UNIDADE", "UND"]),
             valor_unitario: numero(valor(linha, ["VALOR UNITARIO", "VALOR UNITARIO", "VALOR UN"])),
             valor_total: numero(valor(linha, ["VALOR TOTAL", "TOTAL"])),
-            validade: valor(linha, ["VALIDADE"]),
+            validade: formatarData(valor(linha, ["VALIDADE"])),
             nota: valor(linha, ["NOTA", "NF"]),
             tipo: "entrada"
         };
@@ -34,7 +35,7 @@ export async function importarSaidas(json) {
 
     for (const linha of json) {
         const registro = {
-            data: valor(linha, ["DATA SAIDA", "DATA"]),
+            data: formatarData(valor(linha, ["DATA SAIDA", "DATA"])),
             destino: valor(linha, ["DESTINO"]),
             tipo_saida: "cozinha",
             destino_id: "",

@@ -1,4 +1,4 @@
-import { add, getAll } from '../js/db.js';
+import { add, getAll, put } from '../js/db.js';
 
 const CATEGORIAS = [
     "Secos",
@@ -10,6 +10,9 @@ const CATEGORIAS = [
 ];
 
 const UNIDADES = ["kg", "g", "L", "ml", "un", "pct", "cx"];
+let fichaEditandoId = null;
+let fichasCadastradas = [];
+let insumosCadastrados = [];
 
 export function render() {
     return `
@@ -25,7 +28,7 @@ export function render() {
 
         <div class="card p-3 mb-4">
             <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
-                <h5 class="mb-0">Nova ficha técnica</h5>
+                <h5 id="titulo-form-ficha" class="mb-0">Nova ficha técnica</h5>
                 <button id="btn-adicionar-item" class="btn btn-outline-success btn-sm">
                     Adicionar item
                 </button>
@@ -94,6 +97,7 @@ export function render() {
 }
 
 export async function afterRender() {
+    await carregarInsumos();
     document.getElementById("btn-adicionar-item").addEventListener("click", adicionarLinhaItem);
     document.getElementById("btn-limpar-ficha").addEventListener("click", limparFormulario);
     document.getElementById("btn-salvar-ficha").addEventListener("click", salvarFichaTecnica);
@@ -106,9 +110,33 @@ export async function afterRender() {
     await atualizarListaFichas();
 }
 
+window.editarFichaTecnica = function (id) {
+    const ficha = fichasCadastradas.find(item => item.id === Number(id));
+    if (!ficha) return;
+
+    fichaEditandoId = ficha.id;
+    document.getElementById("titulo-form-ficha").textContent = "Editar ficha técnica";
+    document.getElementById("btn-salvar-ficha").textContent = "Atualizar ficha técnica";
+
+    document.getElementById("ficha_nome").value = ficha.nome || "";
+    document.getElementById("ficha_rendimento").value = ficha.rendimento || "";
+    document.getElementById("ficha_numero_porcoes").value = ficha.numeroPorcoes || "";
+    document.getElementById("ficha_rs_porcao").value = ficha.rsPorcao || "";
+    document.getElementById("ficha_rs_total").value = ficha.rsTotal || "";
+    document.getElementById("ficha_pre_preparo").value = ficha.prePreparo || "";
+    document.getElementById("ficha_modo_preparo").value = ficha.modoPreparo || "";
+
+    document.getElementById("itens-ficha").innerHTML = "";
+    (ficha.itens || []).forEach(item => adicionarLinhaItem(item));
+    if (!document.getElementById("itens-ficha").children.length) adicionarLinhaItem();
+
+    document.getElementById("titulo-form-ficha").scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
 function adicionarLinhaItem(item = {}) {
     const tbody = document.getElementById("itens-ficha");
     const tr = document.createElement("tr");
+    const opcoesProdutos = montarOpcoesProdutos(item.produto);
 
     tr.innerHTML = `
         <td>
@@ -120,7 +148,11 @@ function adicionarLinhaItem(item = {}) {
                 `).join("")}
             </select>
         </td>
-        <td><input class="form-control form-control-sm campo-produto" value="${item.produto || ""}"></td>
+        <td>
+            <select class="form-select form-select-sm campo-produto">
+                ${opcoesProdutos}
+            </select>
+        </td>
         <td>
             <select class="form-select form-select-sm campo-unidade">
                 ${UNIDADES.map(unidade => `
@@ -142,6 +174,7 @@ function adicionarLinhaItem(item = {}) {
         </td>
     `;
 
+    tr.querySelector(".campo-produto").value = item.produto || "";
     tr.querySelector(".campo-qtd-p").value = item.quantidadePerCapita || "";
     tr.querySelector(".campo-qtd-t").value = item.quantidadeTotal || "";
     tr.querySelector(".campo-fc").value = item.fatorCorrecao || "";
@@ -154,6 +187,8 @@ function adicionarLinhaItem(item = {}) {
         tr.remove();
         if (!tbody.children.length) adicionarLinhaItem();
     });
+
+    tr.querySelector(".campo-produto").addEventListener("change", () => preencherDadosDoInsumo(tr));
 
     ["campo-qt-compra", "campo-rs-unitario"].forEach((classe) => {
         tr.querySelector(`.${classe}`).addEventListener("input", () => atualizarParcial(tr));
@@ -197,7 +232,16 @@ async function salvarFichaTecnica() {
             ficha.rsPorcao = ficha.rsTotal / ficha.numeroPorcoes;
         }
 
-        await add("fichasTecnicas", ficha);
+        if (fichaEditandoId) {
+            const fichaAtual = fichasCadastradas.find(item => item.id === fichaEditandoId);
+            ficha.id = fichaEditandoId;
+            ficha.criadoEm = fichaAtual?.criadoEm || ficha.criadoEm;
+            ficha.atualizadoEm = new Date().toISOString();
+            await put("fichasTecnicas", ficha);
+        } else {
+            await add("fichasTecnicas", ficha);
+        }
+
         limparFormulario();
         await atualizarListaFichas();
     } catch (error) {
@@ -208,6 +252,7 @@ async function salvarFichaTecnica() {
 
 async function atualizarListaFichas() {
     const fichas = await getAll("fichasTecnicas");
+    fichasCadastradas = fichas;
     const lista = document.getElementById("lista-fichas");
 
     if (!fichas.length) {
@@ -265,6 +310,15 @@ function renderCardFicha(ficha) {
                             ${escaparHtml(ficha.modoPreparo)}
                         </p>
                     ` : ""}
+                    <div class="d-flex justify-content-end mt-3">
+                        <button
+                            class="btn btn-outline-success btn-sm"
+                            onclick="editarFichaTecnica(${ficha.id})"
+                            type="button"
+                        >
+                            Editar ficha
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -335,6 +389,10 @@ function atualizarParcial(tr) {
 }
 
 function limparFormulario() {
+    fichaEditandoId = null;
+    document.getElementById("titulo-form-ficha").textContent = "Nova ficha técnica";
+    document.getElementById("btn-salvar-ficha").textContent = "Salvar ficha técnica";
+
     [
         "ficha_nome",
         "ficha_rendimento",
@@ -351,6 +409,97 @@ function limparFormulario() {
         fatorCorrecao: 1,
         indiceCoccao: 1
     });
+}
+
+async function carregarInsumos() {
+    const [insumos, entradas] = await Promise.all([
+        getAll("insumos"),
+        getAll("entradas")
+    ]);
+
+    const mapa = new Map();
+
+    insumos.forEach((insumo) => {
+        const chave = normalizarTexto(insumo.nome);
+        if (!chave) return;
+        mapa.set(chave, {
+            nome: insumo.nome,
+            categoria: insumo.categoria || "Outros",
+            unidade: normalizarUnidade(insumo.unidade)
+        });
+    });
+
+    entradas.forEach((entrada) => {
+        const chave = normalizarTexto(entrada.nome);
+        if (!chave || mapa.has(chave)) return;
+        mapa.set(chave, {
+            nome: entrada.nome,
+            categoria: "Outros",
+            unidade: normalizarUnidade(entrada.unidade)
+        });
+    });
+
+    insumosCadastrados = Array.from(mapa.values())
+        .sort((a, b) => String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+}
+
+function montarOpcoesProdutos(produtoAtual = "") {
+    const nomes = new Set(insumosCadastrados.map(item => item.nome).filter(Boolean));
+    const opcoes = [
+        `<option value="">Selecione um ingrediente cadastrado</option>`
+    ];
+
+    if (produtoAtual && !nomes.has(produtoAtual)) {
+        opcoes.push(`<option value="${escaparHtml(produtoAtual)}">${escaparHtml(produtoAtual)}</option>`);
+    }
+
+    insumosCadastrados.forEach((insumo) => {
+        opcoes.push(`
+            <option value="${escaparHtml(insumo.nome)}">
+                ${escaparHtml(insumo.nome)}
+            </option>
+        `);
+    });
+
+    return opcoes.join("");
+}
+
+function preencherDadosDoInsumo(tr) {
+    const produto = tr.querySelector(".campo-produto").value;
+    const insumo = insumosCadastrados.find(item => item.nome === produto);
+
+    if (!insumo) return;
+
+    if (insumo.categoria) tr.querySelector(".campo-categoria").value = insumo.categoria;
+    if (insumo.unidade) tr.querySelector(".campo-unidade").value = insumo.unidade;
+}
+
+function normalizarTexto(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+}
+
+function normalizarUnidade(unidade) {
+    const mapa = {
+        QUILO: "kg",
+        QUILOS: "kg",
+        KG: "kg",
+        GRAMA: "g",
+        GRAMAS: "g",
+        G: "g",
+        LITRO: "L",
+        LITROS: "L",
+        L: "L",
+        ML: "ml",
+        UNIDADE: "un",
+        UNIDADES: "un",
+        UN: "un"
+    };
+
+    return mapa[normalizarTexto(unidade)] || unidade || "kg";
 }
 
 function lerNumero(id) {

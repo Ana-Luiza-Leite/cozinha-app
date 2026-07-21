@@ -1,166 +1,317 @@
-import { add, getAll } from '../js/db.js';
+import { add, getAll, put } from '../js/db.js';
+
+const CADASTROS = {
+    fornecedores: {
+        titulo: "Fornecedor",
+        plural: "Fornecedores",
+        botao: "fornecedor",
+        campos: [
+            { nome: "nome", label: "Razao social" },
+            { nome: "cnpj", label: "CNPJ" },
+            { nome: "email", label: "E-mail", type: "email" },
+            { nome: "telefone", label: "Telefone" }
+        ]
+    },
+    doadores: {
+        titulo: "Doador",
+        plural: "Doadores",
+        botao: "doador",
+        campos: [
+            { nome: "nome", label: "Nome" },
+            { nome: "cpf", label: "CPF" },
+            { nome: "telefone", label: "Celular" }
+        ]
+    },
+    destinos: {
+        titulo: "Cozinha / Destino",
+        plural: "Cozinhas / Destinos",
+        botao: "destino",
+        campos: [
+            { nome: "nome", label: "Nome da cozinha ou unidade destino" }
+        ]
+    },
+    beneficiados: {
+        titulo: "Beneficiado por doacao",
+        plural: "Beneficiados",
+        botao: "beneficiado",
+        campos: [
+            { nome: "nome", label: "Nome do beneficiado" },
+            { nome: "telefone", label: "Telefone" }
+        ]
+    },
+    insumos: {
+        titulo: "Insumo / Ingrediente",
+        plural: "Insumos / Ingredientes",
+        botao: "insumo",
+        campos: [
+            { nome: "nome", label: "Nome do insumo" },
+            { nome: "categoria", label: "Grupo", type: "select", opcoes: [
+                "Secos",
+                "Hortifruti",
+                "Carnes",
+                "Laticinios",
+                "Temperos",
+                "Outros"
+            ] },
+            { nome: "unidade", label: "Unidade padrao", type: "select", opcoes: [
+                "kg",
+                "g",
+                "L",
+                "ml",
+                "un",
+                "pct",
+                "cx"
+            ] }
+        ]
+    }
+};
+
+const idsEmEdicao = {};
+let dadosPorTipo = {};
 
 export function render() {
     return `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Cadastros</h2>
-            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao início</button>
+            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
         </div>
 
         <div class="row g-3">
-            <div class="col-lg-6">
-                <div class="card p-3 h-100">
-                    <h5>Fornecedor</h5>
-                    <input id="fornecedor_nome" class="form-control mb-2" placeholder="Razao social">
-                    <input id="fornecedor_cnpj" class="form-control mb-2" placeholder="CNPJ">
-                    <input id="fornecedor_email" class="form-control mb-2" placeholder="E-mail">
-                    <input id="fornecedor_telefone" class="form-control mb-2" placeholder="Telefone">
-                    <button class="btn btn-success" onclick="salvarFornecedor()">Salvar fornecedor</button>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card p-3 h-100">
-                    <h5>Doador</h5>
-                    <input id="doador_nome" class="form-control mb-2" placeholder="Nome">
-                    <input id="doador_cpf" class="form-control mb-2" placeholder="CPF">
-                    <input id="doador_telefone" class="form-control mb-2" placeholder="Telefone">
-                    <button class="btn btn-success" onclick="salvarDoador()">Salvar doador</button>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card p-3 h-100">
-                    <h5>Cozinha / Destino</h5>
-                    <input id="destino_nome" class="form-control mb-2" placeholder="Nome da cozinha ou unidade destino">
-                    <button class="btn btn-success" onclick="salvarDestino()">Salvar destino</button>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card p-3 h-100">
-                    <h5>Beneficiado por doacao</h5>
-                    <input id="beneficiado_nome" class="form-control mb-2" placeholder="Nome do beneficiado">
-                    <input id="beneficiado_telefone" class="form-control mb-2" placeholder="Telefone">
-                    <button class="btn btn-success" onclick="salvarBeneficiado()">Salvar beneficiado</button>
-                </div>
-            </div>
+            ${Object.entries(CADASTROS).map(([storeName, config]) => renderFormulario(storeName, config)).join("")}
         </div>
 
-        <div id="lista" class="mt-4"></div>
+        <div class="card p-3 mt-4">
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+                <h4 class="mb-0">Consultar cadastros</h4>
+                <input
+                    id="consulta_cadastros"
+                    class="form-control"
+                    style="max-width: 360px"
+                    placeholder="Buscar em todos os cadastros"
+                >
+            </div>
+            <div id="lista"></div>
+        </div>
     `;
 }
 
 export async function afterRender() {
+    document.getElementById("consulta_cadastros").addEventListener("input", renderizarListas);
     atualizarLista();
 }
 
-window.salvarFornecedor = async function () {
-    const registro = {
-        nome: document.getElementById("fornecedor_nome").value.trim(),
-        cnpj: document.getElementById("fornecedor_cnpj").value.trim(),
-        email: document.getElementById("fornecedor_email").value.trim(),
-        telefone: document.getElementById("fornecedor_telefone").value.trim()
-    };
+window.salvarFornecedor = () => salvarCadastro("fornecedores");
+window.salvarDoador = () => salvarCadastro("doadores");
+window.salvarDestino = () => salvarCadastro("destinos");
+window.salvarBeneficiado = () => salvarCadastro("beneficiados");
+window.salvarInsumo = () => salvarCadastro("insumos");
+
+window.editarCadastro = function (storeName, id) {
+    const registro = (dadosPorTipo[storeName] || []).find(item => item.id === Number(id));
+    if (!registro) return;
+
+    idsEmEdicao[storeName] = registro.id;
+    CADASTROS[storeName].campos.forEach((campo) => {
+        document.getElementById(idCampo(storeName, campo.nome)).value = registro[campo.nome] || "";
+    });
+
+    document.getElementById(idBotao(storeName)).textContent = `Atualizar ${CADASTROS[storeName].botao}`;
+    document.getElementById(idCancelar(storeName)).classList.remove("d-none");
+    document.getElementById(idCampo(storeName, "nome")).focus();
+};
+
+window.cancelarEdicaoCadastro = function (storeName) {
+    limparFormulario(storeName);
+};
+
+async function salvarCadastro(storeName) {
+    const config = CADASTROS[storeName];
+    const registro = lerFormulario(storeName, config);
 
     if (!registro.nome) {
-        alert("Informe a razao social do fornecedor.");
+        alert(`Informe o nome de ${config.botao}.`);
         return;
     }
 
-    await add("fornecedores", registro);
-    limpar(["fornecedor_nome", "fornecedor_cnpj", "fornecedor_email", "fornecedor_telefone"]);
-    atualizarLista();
-};
-
-window.salvarDoador = async function () {
-    const registro = {
-        nome: document.getElementById("doador_nome").value.trim(),
-        cpf: document.getElementById("doador_cpf").value.trim(),
-        telefone: document.getElementById("doador_telefone").value.trim()
-    };
-
-    if (!registro.nome) {
-        alert("Informe o nome do doador.");
-        return;
+    if (idsEmEdicao[storeName]) {
+        registro.id = idsEmEdicao[storeName];
+        await put(storeName, registro);
+    } else {
+        await add(storeName, registro);
     }
 
-    await add("doadores", registro);
-    limpar(["doador_nome", "doador_cpf", "doador_telefone"]);
+    limparFormulario(storeName);
     atualizarLista();
-};
-
-window.salvarDestino = async function () {
-    const registro = {
-        nome: document.getElementById("destino_nome").value.trim()
-    };
-
-    if (!registro.nome) {
-        alert("Informe o nome do destino.");
-        return;
-    }
-
-    await add("destinos", registro);
-    limpar(["destino_nome"]);
-    atualizarLista();
-};
-
-window.salvarBeneficiado = async function () {
-    const registro = {
-        nome: document.getElementById("beneficiado_nome").value.trim(),
-        telefone: document.getElementById("beneficiado_telefone").value.trim()
-    };
-
-    if (!registro.nome) {
-        alert("Informe o nome do beneficiado.");
-        return;
-    }
-
-    await add("beneficiados", registro);
-    limpar(["beneficiado_nome", "beneficiado_telefone"]);
-    atualizarLista();
-};
+}
 
 async function atualizarLista() {
-    const [fornecedores, doadores, destinos, beneficiados] = await Promise.all([
-        getAll("fornecedores"),
-        getAll("doadores"),
-        getAll("destinos"),
-        getAll("beneficiados")
-    ]);
+    const entradas = await Promise.all(
+        Object.keys(CADASTROS).map(async storeName => [storeName, await getAll(storeName)])
+    );
+
+    dadosPorTipo = Object.fromEntries(entradas);
+    renderizarListas();
+}
+
+function renderizarListas() {
+    const termo = normalizarTexto(document.getElementById("consulta_cadastros")?.value || "");
 
     document.getElementById("lista").innerHTML = `
         <div class="row g-3">
-            ${renderLista("Fornecedores", fornecedores, item => textoFornecedor(item))}
-            ${renderLista("Doadores", doadores, item => `${item.nome}${item.cpf ? ` - CPF ${item.cpf}` : ""}`)}
-            ${renderLista("Cozinhas / Destinos", destinos, item => item.nome)}
-            ${renderLista("Beneficiados", beneficiados, item => `${item.nome}${item.telefone ? ` - ${item.telefone}` : ""}`)}
+            ${Object.entries(CADASTROS).map(([storeName, config]) => {
+                const dados = filtrarDados(dadosPorTipo[storeName] || [], termo);
+                return renderLista(storeName, config, dados);
+            }).join("")}
         </div>
     `;
 }
 
-function renderLista(titulo, dados, texto) {
+function renderFormulario(storeName, config) {
     return `
         <div class="col-lg-6">
             <div class="card p-3 h-100">
-                <h5>${titulo}</h5>
+                <h5>${config.titulo}</h5>
+                ${config.campos.map(campo => renderCampo(storeName, campo)).join("")}
+                <div class="d-flex gap-2">
+                    <button
+                        id="${idBotao(storeName)}"
+                        class="btn btn-success flex-fill"
+                        onclick="${nomeFuncaoSalvar(storeName)}()"
+                    >
+                        Salvar ${config.botao}
+                    </button>
+                    <button
+                        id="${idCancelar(storeName)}"
+                        class="btn btn-outline-secondary d-none"
+                        onclick="cancelarEdicaoCadastro('${storeName}')"
+                        type="button"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderCampo(storeName, campo) {
+    if (campo.type === "select") {
+        return `
+            <select id="${idCampo(storeName, campo.nome)}" class="form-select mb-2">
+                <option value="">${campo.label}</option>
+                ${campo.opcoes.map(opcao => `<option value="${opcao}">${opcao}</option>`).join("")}
+            </select>
+        `;
+    }
+
+    return `
+        <input
+            id="${idCampo(storeName, campo.nome)}"
+            class="form-control mb-2"
+            placeholder="${campo.label}"
+            type="${campo.type || "text"}"
+        >
+    `;
+}
+
+function renderLista(storeName, config, dados) {
+    return `
+        <div class="col-lg-6">
+            <div class="border rounded p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">${config.plural}</h5>
+                    <span class="badge text-bg-success">${dados.length}</span>
+                </div>
                 ${dados.length
-                    ? `<ul class="list-group list-group-flush">${dados.map(item => `<li class="list-group-item px-0">${texto(item)}</li>`).join("")}</ul>`
-                    : `<div class="alert alert-info mb-0">Nenhum cadastro registrado.</div>`
+                    ? `<div class="list-group list-group-flush">
+                        ${dados.map(item => renderItemLista(storeName, config, item)).join("")}
+                    </div>`
+                    : `<div class="alert alert-info mb-0">Nenhum cadastro encontrado.</div>`
                 }
             </div>
         </div>
     `;
 }
 
-function textoFornecedor(item) {
-    return [
-        item.nome,
-        item.cnpj ? `CNPJ ${item.cnpj}` : "",
-        item.observacao || ""
-    ].filter(Boolean).join(" - ");
+function renderItemLista(storeName, config, item) {
+    const detalhes = config.campos
+        .filter(campo => campo.nome !== "nome" && item[campo.nome])
+        .map(campo => `${campo.label}: ${item[campo.nome]}`)
+        .join(" | ");
+
+    return `
+        <div class="list-group-item px-0">
+            <div class="d-flex justify-content-between gap-2">
+                <div>
+                    <div class="fw-semibold">${escaparHtml(item.nome)}</div>
+                    ${detalhes ? `<div class="small text-muted">${escaparHtml(detalhes)}</div>` : ""}
+                </div>
+                <button
+                    class="btn btn-outline-success btn-sm"
+                    onclick="editarCadastro('${storeName}', ${item.id})"
+                    type="button"
+                >
+                    Editar
+                </button>
+            </div>
+        </div>
+    `;
 }
 
-function limpar(ids) {
-    ids.forEach(id => document.getElementById(id).value = "");
+function lerFormulario(storeName, config) {
+    return config.campos.reduce((registro, campo) => {
+        registro[campo.nome] = document.getElementById(idCampo(storeName, campo.nome)).value.trim();
+        return registro;
+    }, {});
+}
+
+function limparFormulario(storeName) {
+    delete idsEmEdicao[storeName];
+    CADASTROS[storeName].campos.forEach((campo) => {
+        document.getElementById(idCampo(storeName, campo.nome)).value = "";
+    });
+    document.getElementById(idBotao(storeName)).textContent = `Salvar ${CADASTROS[storeName].botao}`;
+    document.getElementById(idCancelar(storeName)).classList.add("d-none");
+}
+
+function filtrarDados(dados, termo) {
+    if (!termo) return dados;
+
+    return dados.filter(item => normalizarTexto(Object.values(item).join(" ")).includes(termo));
+}
+
+function nomeFuncaoSalvar(storeName) {
+    return {
+        fornecedores: "salvarFornecedor",
+        doadores: "salvarDoador",
+        destinos: "salvarDestino",
+        beneficiados: "salvarBeneficiado",
+        insumos: "salvarInsumo"
+    }[storeName];
+}
+
+function idCampo(storeName, campo) {
+    return `${storeName}_${campo}`;
+}
+
+function idBotao(storeName) {
+    return `${storeName}_botao_salvar`;
+}
+
+function idCancelar(storeName) {
+    return `${storeName}_botao_cancelar`;
+}
+
+function normalizarTexto(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function escaparHtml(valor) {
+    const div = document.createElement("div");
+    div.textContent = String(valor ?? "");
+    return div.innerHTML;
 }

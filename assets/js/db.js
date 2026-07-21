@@ -92,6 +92,18 @@ export async function add(storeName, data) {
     });
 }
 
+export async function put(storeName, data) {
+    const database = await getDB();
+
+    return new Promise((resolve, reject) => {
+        const tx = database.transaction(storeName, "readwrite");
+        const req = tx.objectStore(storeName).put(data);
+
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
 function garantirDadosIniciais(database) {
     return Promise.all([
         garantirRegistrosIniciais(database, "fornecedores", FORNECEDORES_INICIAIS, {

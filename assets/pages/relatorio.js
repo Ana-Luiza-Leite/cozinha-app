@@ -1,5 +1,6 @@
 import { getAll } from '../js/db.js';
 import { calcularEstoque } from '../services/estoqueService.js';
+import { formatarData, obterDataOrdenacao } from '../utils/data.js';
 
 export function render() {
     return `
@@ -49,7 +50,7 @@ export async function afterRender() {
     const movimentos = [
         ...entradas.map(item => ({ ...item, tipo: "Entrada" })),
         ...saidas.map(item => ({ ...item, tipo: "Saida" }))
-    ].sort((a, b) => obterData(b.data) - obterData(a.data));
+    ].sort((a, b) => obterDataOrdenacao(b.data) - obterDataOrdenacao(a.data));
 
     document.getElementById("movimentacoes").innerHTML = movimentos.length
         ? `
@@ -104,30 +105,6 @@ function cardResumo(titulo, valor) {
 
 function somarQtd(lista) {
     return lista.reduce((total, item) => total + Number(item.qtd || 0), 0);
-}
-
-function formatarData(data) {
-    if (!data) return "";
-
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(data))) return data;
-
-    const dataFormatada = obterData(data);
-    if (Number.isNaN(dataFormatada.getTime())) return String(data);
-
-    return dataFormatada.toLocaleDateString("pt-BR");
-}
-
-function obterData(data) {
-    if (!data) return new Date(0);
-
-    const texto = String(data).trim();
-    const partes = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-
-    if (partes) {
-        return new Date(Number(partes[3]), Number(partes[2]) - 1, Number(partes[1]));
-    }
-
-    return new Date(data);
 }
 
 function formatarNumero(valor) {

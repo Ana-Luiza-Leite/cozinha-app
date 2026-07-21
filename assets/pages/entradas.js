@@ -1,5 +1,6 @@
 import { add, getAll } from '../js/db.js';
 import { importarExcel } from '../utils/excel.js';
+import { aplicarMascaraData, formatarData } from '../utils/data.js';
 
 window.importarArquivo = async function(file) {
     await importarExcel(file, "entrada");
@@ -88,6 +89,8 @@ export function render() {
 }
 
 export async function afterRender() {
+    aplicarMascaraData("data");
+    aplicarMascaraData("validade");
     await carregarOpcoes();
     alternarOrigemEntrada();
     atualizarLista();
@@ -102,7 +105,7 @@ window.salvar = async function () {
         : fornecedorSelect.options[fornecedorSelect.selectedIndex]?.text || "";
 
     const registro = {
-        data: document.getElementById("data").value,
+        data: formatarData(document.getElementById("data").value),
         origem,
         tipo_entrada: tipoEntrada,
         fornecedor_id: tipoEntrada === "compra" ? fornecedorSelect.value : "",
@@ -112,7 +115,7 @@ window.salvar = async function () {
         unidade: document.getElementById("unidade").value,
         valor_unitario: Number(document.getElementById("valor_unitario").value || 0),
         valor_total: Number(document.getElementById("valor_total").value || 0),
-        validade: document.getElementById("validade").value,
+        validade: formatarData(document.getElementById("validade").value),
         nota: document.getElementById("nota").value,
         tipo: "entrada"
     };
@@ -156,7 +159,7 @@ async function atualizarLista() {
                     <tbody>
                         ${dados.map(d => `
                             <tr>
-                                <td>${d.data || ""}</td>
+                                <td>${formatarData(d.data)}</td>
                                 <td>${d.origem || ""}</td>
                                 <td>${d.tipo_entrada === "doacao" ? "Doacao" : "Compra"}</td>
                                 <td>${d.nome || ""}</td>
@@ -164,7 +167,7 @@ async function atualizarLista() {
                                 <td>${d.unidade || ""}</td>
                                 <td>${formatarNumero(d.valor_unitario)}</td>
                                 <td>${formatarNumero(d.valor_total)}</td>
-                                <td>${d.validade || ""}</td>
+                                <td>${formatarData(d.validade)}</td>
                                 <td>${d.nota || ""}</td>
                             </tr>
                         `).join("")}

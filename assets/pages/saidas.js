@@ -1,5 +1,8 @@
 import { add, getAll } from '../js/db.js';
 import { importarExcel } from '../utils/excel.js';
+import { aplicarMascaraData, formatarData } from '../utils/data.js';
+
+let produtosCadastrados = [];
 
 window.importarSaidaArquivo = async function(file) {
     await importarExcel(file, "saida");
@@ -55,6 +58,7 @@ export function render() {
                     <option value="Grama">Grama</option>
                     <option value="Duzia">Duzia</option>
                     <option value="Litros">Litros</option>
+                    <option value="Unidade">Unidade</option>
                 </select>
             </div>
         </div>
@@ -66,7 +70,10 @@ export function render() {
 }
 
 export async function afterRender() {
+    aplicarMascaraData("data");
     await carregarOpcoes();
+    document.getElementById("nome").addEventListener("change", preencherUnidadeProduto);
+    document.getElementById("nome").addEventListener("input", preencherUnidadeProduto);
     alternarDestinoSaida();
     atualizarLista();
 }
@@ -93,7 +100,7 @@ window.salvar = async function () {
         nome: document.getElementById("nome").value,
         qtd: Number(document.getElementById("qtd").value),
         unidade: document.getElementById("unidade").value,
-        data: document.getElementById("data").value,
+        data: formatarData(document.getElementById("data").value),
         destino,
         tipo_saida: tipoSaida,
         destino_id: tipoSaida === "cozinha" ? destinoSelect.value : "",
@@ -147,19 +154,58 @@ window.alternarDestinoSaida = function () {
 };
 
 async function carregarOpcoes() {
-    const [destinos, beneficiados, entradas] = await Promise.all([
+    const [destinos, beneficiados, entradas, insumos] = await Promise.all([
         getAll("destinos"),
         getAll("beneficiados"),
-        getAll("entradas")
+        getAll("entradas"),
+        getAll("insumos")
     ]);
 
     preencherSelect("destino", destinos, "Cadastre uma cozinha primeiro");
     preencherSelect("beneficiado", beneficiados, "Cadastre um beneficiado primeiro");
 
-    const produtos = [...new Set(entradas.map(item => item.nome).filter(Boolean))].sort();
+    produtosCadastrados = montarProdutosCadastrados(insumos, entradas);
+    const produtos = produtosCadastrados.map(item => item.nome);
+
     document.getElementById("produtos").innerHTML = produtos
-        .map(nome => `<option value="${nome}"></option>`)
+        .map(nome => `<option value="${escaparHtml(nome)}"></option>`)
         .join("");
+}
+
+function montarProdutosCadastrados(insumos, entradas) {
+    const mapa = new Map();
+
+    insumos.forEach((insumo) => {
+        const chave = normalizarTexto(insumo.nome);
+        if (!chave) return;
+
+        mapa.set(chave, {
+            nome: insumo.nome,
+            unidade: normalizarUnidade(insumo.unidade)
+        });
+    });
+
+    entradas.forEach((entrada) => {
+        const chave = normalizarTexto(entrada.nome);
+        if (!chave || mapa.has(chave)) return;
+
+        mapa.set(chave, {
+            nome: entrada.nome,
+            unidade: normalizarUnidade(entrada.unidade)
+        });
+    });
+
+    return Array.from(mapa.values())
+        .sort((a, b) => String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+}
+
+function preencherUnidadeProduto() {
+    const nome = document.getElementById("nome").value;
+    const produto = produtosCadastrados.find(item => normalizarTexto(item.nome) === normalizarTexto(nome));
+
+    if (produto?.unidade) {
+        document.getElementById("unidade").value = produto.unidade;
+    }
 }
 
 function preencherSelect(id, dados, vazio) {
@@ -174,9 +220,38 @@ function limparFormulario() {
     document.getElementById("unidade").value = "Quilo";
 }
 
-function formatarData(valor) {
-    if (!valor) return "";
-    if (typeof valor === "string") return valor;
+function normalizarUnidade(unidade) {
+    const mapa = {
+        KG: "Quilo",
+        QUILO: "Quilo",
+        QUILOS: "Quilo",
+        G: "Grama",
+        GRAMA: "Grama",
+        GRAMAS: "Grama",
+        L: "Litros",
+        LITRO: "Litros",
+        LITROS: "Litros",
+        ML: "Litros",
+        UN: "Unidade",
+        UNIDADE: "Unidade",
+        UNIDADES: "Unidade",
+        DUZIA: "Duzia",
+        DUZIAS: "Duzia"
+    };
 
-    return new Date(valor).toLocaleDateString("pt-BR");
+    return mapa[normalizarTexto(unidade)] || unidade || "Quilo";
+}
+
+function normalizarTexto(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+}
+
+function escaparHtml(valor) {
+    const div = document.createElement("div");
+    div.textContent = String(valor ?? "");
+    return div.innerHTML;
 }
