@@ -2,7 +2,7 @@ import { add, getAll } from '../js/db.js';
 import { importarExcel } from '../utils/excel.js';
 import { aplicarMascaraData, formatarData } from '../utils/data.js';
 
-window.importarArquivo = async function(file) {
+window.importarArquivo = async function (file) {
     await importarExcel(file, "entrada");
     atualizarLista();
 };
@@ -71,7 +71,7 @@ export function render() {
 
             <div class="col-md-2">
                 <label class="form-label" for="valor_total">Valor total</label>
-                <input id="valor_total" type="number" step="0.01" class="form-control">
+                <input id="valor_total" type="number" step="0.01" class="form-control" readonly>
             </div>
 
             <div class="col-md-2">
@@ -96,9 +96,24 @@ export function render() {
 export async function afterRender() {
     aplicarMascaraData("data");
     aplicarMascaraData("validade");
+
     await carregarOpcoes();
+
     alternarOrigemEntrada();
     atualizarLista();
+
+    document.getElementById("qtd")
+       .addEventListener("input", calcularValorTotal);
+
+    document.getElementById("valor_unitario")
+        .addEventListener("input", calcularValorTotal);
+}
+
+function calcularValorTotal() {
+    const qtd = Number(document.getElementById("qtd").value) || 0;
+    const valorUnitario = Number(document.getElementById("valor_unitario").value) || 0;
+
+    document.getElementById("valor_total").value = (qtd * valorUnitario).toFixed(2);
 }
 
 window.salvar = async function () {
