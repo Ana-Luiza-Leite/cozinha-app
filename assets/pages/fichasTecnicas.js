@@ -96,6 +96,21 @@ export function render() {
                     >
                 </div>
 
+                <div class="col-lg-3">
+                    <label class="form-label" for="ficha_cozinha">
+                        Cozinha
+                    </label>
+
+                    <select
+                        id="ficha_cozinha"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Carregando cozinhas...
+                        </option>
+                    </select>
+                </div>
+
                 <div class="col-md-3">
                     <label class="form-label" for="ficha_rendimento">
                         Rendimento
@@ -249,8 +264,38 @@ export function render() {
     `;
 }
 
+    async function carregarCozinhas() {
+        const destinos = await getAll("destinos");
+
+        const select =
+            document.getElementById("ficha_cozinha");
+
+        if (!select) return;
+
+        if (!destinos.length) {
+            select.innerHTML = `
+                <option value="">
+                    Nenhuma cozinha cadastrada
+                </option>
+            `;
+            return;
+        }
+
+        select.innerHTML = `
+            <option value="">
+                Selecione uma cozinha
+            </option>
+            ${destinos.map(destino => `
+                <option value="${destino.id}">
+                    ${escaparHtml(destino.nome)}
+                </option>
+            `).join("")}
+        `;
+    }
+
 export async function afterRender() {
     await carregarInsumos();
+    await carregarCozinhas();
 
     document
         .getElementById("btn-adicionar-item")
@@ -685,6 +730,15 @@ async function salvarEdicaoFicha() {
         
             const ficha = {
             nome,
+                cozinha_id:
+                Number(
+                    document.getElementById("ficha_cozinha").value
+                ),
+
+            cozinha:
+                document
+                    .getElementById("ficha_cozinha")
+                    .selectedOptions[0]?.text || "",
 
             rendimento:
                 document
@@ -715,7 +769,7 @@ async function salvarEdicaoFicha() {
                     .getElementById("ficha_modo_preparo")
                     .value
                     .trim(),
-
+            
             itens,
             criadoEm: new Date().toISOString()
         };
@@ -1078,6 +1132,11 @@ async function salvarFichaTecnica() {
                 .value
                 .trim();
 
+        const cozinhaId =
+            document
+                .getElementById("ficha_cozinha")
+                .value;
+
         const itens = lerItens();
 
         if (!nome) {
@@ -1096,7 +1155,13 @@ async function salvarFichaTecnica() {
 
         const ficha = {
             nome,
+            cozinha_id: Number(cozinhaId),
 
+            cozinha:
+                document
+                    .getElementById("ficha_cozinha")
+                    .selectedOptions[0]?.text || "",
+                    
             rendimento:
                 document
                     .getElementById("ficha_rendimento")
