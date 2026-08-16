@@ -1,6 +1,6 @@
 const DB_NAME = "cozinhaDB";
 const DB_VERSION = 3;
-
+//db.js
 const FORNECEDORES_INICIAIS = [
     { nome: "COOPERFAMILIA", cnpj: "09.263.339/0001-55" },
     { nome: "COOP OURO DO SUL", cnpj: "91.360.420/0001-34" },

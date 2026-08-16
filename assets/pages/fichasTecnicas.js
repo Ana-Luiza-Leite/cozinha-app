@@ -1,5 +1,5 @@
 import { add, getAll, put, remove } from '../js/db.js';
-
+//fichastecnicas.js
 const CATEGORIAS = [
     "Secos",
     "Hortifruti",
@@ -147,8 +147,10 @@ export function render() {
                         type="number"
                         min="0"
                         step="0.01"
+                        readonly
                     >
                 </div>
+                  
 
                 <div class="col-md-6">
                     <label class="form-label" for="ficha_pre_preparo">
@@ -267,7 +269,21 @@ export async function afterRender() {
         fatorCorrecao: 1,
         indiceCoccao: 1
     });
+    document
+    .getElementById("ficha_numero_porcoes")
+    .addEventListener(
+        "input",
+        calcularValorTotalFicha
+    );
 
+    document
+        .getElementById("ficha_rs_porcao")
+        .addEventListener(
+            "input",
+            calcularValorTotalFicha
+        );
+
+    calcularValorTotalFicha();
     await atualizarListaFichas();
 }
 
@@ -666,65 +682,74 @@ async function salvarEdicaoFicha() {
             return;
         }
 
-        const ficha = {
-            id: fichaEditandoId,
+        
+            const ficha = {
             nome,
 
-            rendimento: document
-                .getElementById("edicao_ficha_rendimento")
-                .value
-                .trim(),
+            rendimento:
+                document
+                    .getElementById("ficha_rendimento")
+                    .value
+                    .trim(),
 
-            numeroPorcoes: lerNumeroElemento(
-                "edicao_ficha_numero_porcoes"
-            ),
+            numeroPorcoes:
+                lerNumero("ficha_numero_porcoes"),
 
-            rsPorcao: lerNumeroElemento(
-                "edicao_ficha_rs_porcao"
-            ),
+            rsPorcao:
+                lerNumero("ficha_rs_porcao"),
 
-            rsTotal: lerNumeroElemento(
-                "edicao_ficha_rs_total"
-            ),
+            rsTotal:
+                calcularTotalFicha(
+                    lerNumero("ficha_rs_porcao"),
+                    lerNumero("ficha_numero_porcoes")
+                ),
 
-            prePreparo: document
-                .getElementById("edicao_ficha_pre_preparo")
-                .value
-                .trim(),
+            prePreparo:
+                document
+                    .getElementById("ficha_pre_preparo")
+                    .value
+                    .trim(),
 
-            modoPreparo: document
-                .getElementById("edicao_ficha_modo_preparo")
-                .value
-                .trim(),
+            modoPreparo:
+                document
+                    .getElementById("ficha_modo_preparo")
+                    .value
+                    .trim(),
 
             itens,
-
-            criadoEm: fichaAtual.criadoEm || new Date().toISOString(),
-
-            atualizadoEm: new Date().toISOString()
+            criadoEm: new Date().toISOString()
         };
 
-        if (!ficha.rsTotal) {
-            ficha.rsTotal = itens.reduce(
-                (total, item) => total + (item.valorParcial || 0),
-                0
+        if (fichaEditandoId) {
+            const fichaAtual =
+                fichasCadastradas.find(
+                    item => item.id === fichaEditandoId
+                );
+
+            ficha.id = fichaEditandoId;
+
+            ficha.criadoEm =
+                fichaAtual?.criadoEm ||
+                ficha.criadoEm;
+
+            ficha.atualizadoEm =
+                new Date().toISOString();
+
+            await put(
+                "fichasTecnicas",
+                ficha
+            );
+        } else {
+            await add(
+                "fichasTecnicas",
+                ficha
             );
         }
+       // await put("fichasTecnicas", ficha);
 
-        if (
-            !ficha.rsPorcao &&
-            ficha.rsTotal &&
-            ficha.numeroPorcoes
-        ) {
-            ficha.rsPorcao =
-                ficha.rsTotal / ficha.numeroPorcoes;
-        }
+        //fecharModalFicha();
 
-        await put("fichasTecnicas", ficha);
-
-        fecharModalFicha();
-
-        await atualizarListaFichas();
+        //await atualizarListaFichas();
 
         alert("Ficha técnica atualizada com sucesso!");
     } catch (error) {
@@ -1047,15 +1072,18 @@ function adicionarLinhaItem(item = {}) {
 
 async function salvarFichaTecnica() {
     try {
-        const nome = document
-            .getElementById("ficha_nome")
-            .value
-            .trim();
+        const nome =
+            document
+                .getElementById("ficha_nome")
+                .value
+                .trim();
 
         const itens = lerItens();
 
         if (!nome) {
-            alert("Informe o nome do preparo.");
+            alert(
+                "Informe o nome do preparo."
+            );
             return;
         }
 
@@ -1069,10 +1097,11 @@ async function salvarFichaTecnica() {
         const ficha = {
             nome,
 
-            rendimento: document
-                .getElementById("ficha_rendimento")
-                .value
-                .trim(),
+            rendimento:
+                document
+                    .getElementById("ficha_rendimento")
+                    .value
+                    .trim(),
 
             numeroPorcoes:
                 lerNumero("ficha_numero_porcoes"),
@@ -1081,49 +1110,61 @@ async function salvarFichaTecnica() {
                 lerNumero("ficha_rs_porcao"),
 
             rsTotal:
-                lerNumero("ficha_rs_total"),
+                calcularTotalFicha(
+                    lerNumero("ficha_rs_porcao"),
+                    lerNumero("ficha_numero_porcoes")
+                ),
 
-            prePreparo: document
-                .getElementById("ficha_pre_preparo")
-                .value
-                .trim(),
+            prePreparo:
+                document
+                    .getElementById("ficha_pre_preparo")
+                    .value
+                    .trim(),
 
-            modoPreparo: document
-                .getElementById("ficha_modo_preparo")
-                .value
-                .trim(),
+            modoPreparo:
+                document
+                    .getElementById("ficha_modo_preparo")
+                    .value
+                    .trim(),
 
             itens,
 
-            criadoEm: new Date().toISOString()
+            criadoEm:
+                new Date().toISOString()
         };
 
-        if (!ficha.rsTotal) {
-            ficha.rsTotal = itens.reduce(
-                (total, item) =>
-                    total + (item.valorParcial || 0),
-                0
+        if (fichaEditandoId) {
+            const fichaAtual =
+                fichasCadastradas.find(
+                    item =>
+                        item.id === fichaEditandoId
+                );
+
+            ficha.id =
+                fichaEditandoId;
+
+            ficha.criadoEm =
+                fichaAtual?.criadoEm ||
+                ficha.criadoEm;
+
+            ficha.atualizadoEm =
+                new Date().toISOString();
+
+            await put(
+                "fichasTecnicas",
+                ficha
+            );
+        } else {
+            await add(
+                "fichasTecnicas",
+                ficha
             );
         }
-
-        if (
-            !ficha.rsPorcao &&
-            ficha.rsTotal &&
-            ficha.numeroPorcoes
-        ) {
-            ficha.rsPorcao =
-                ficha.rsTotal /
-                ficha.numeroPorcoes;
-        }
-
-        await add(
-            "fichasTecnicas",
-            ficha
-        );
 
         limparFormulario();
 
         await atualizarListaFichas();
+
     } catch (error) {
         console.error(
             "Erro ao salvar ficha técnica:",
@@ -1135,7 +1176,6 @@ async function salvarFichaTecnica() {
         );
     }
 }
-
 
 /* =========================================================
    LISTA DE FICHAS
@@ -1495,6 +1535,36 @@ function atualizarParcial(tr) {
     }
 }
 
+function calcularTotalFicha(rsPorcao, numeroPorcoes) {
+    const porcao = Number(rsPorcao) || 0;
+    const porcoes = Number(numeroPorcoes) || 0;
+
+    return Number(
+        (porcao * porcoes).toFixed(2)
+    );
+}
+// valor total da ficha técnica
+
+function calcularValorTotalFicha() {
+    const rsPorcao =
+        lerNumero("ficha_rs_porcao");
+
+    const numeroPorcoes =
+        lerNumero("ficha_numero_porcoes");
+
+    const campoTotal =
+        document.getElementById(
+            "ficha_rs_total"
+        );
+
+    if (!campoTotal) return;
+
+    campoTotal.value =
+        calcularTotalFicha(
+            rsPorcao,
+            numeroPorcoes
+        ).toFixed(2);
+}
 
 /* =========================================================
    LIMPAR FORMULÁRIO PRINCIPAL
