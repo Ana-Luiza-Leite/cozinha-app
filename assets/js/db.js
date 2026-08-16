@@ -104,6 +104,19 @@ export async function put(storeName, data) {
     });
 }
 
+export async function remove(storeName, id) {
+    const database = await getDB();
+
+    return new Promise((resolve, reject) => {
+        const tx = database.transaction(storeName, "readwrite");
+        const store = tx.objectStore(storeName);
+        const req = store.delete(Number(id));
+
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+    });
+}
+
 function garantirDadosIniciais(database) {
     return Promise.all([
         garantirRegistrosIniciais(database, "fornecedores", FORNECEDORES_INICIAIS, {
