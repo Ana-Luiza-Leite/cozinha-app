@@ -201,6 +201,9 @@ export function render() {
                             <th>Un.</th>
                             <th>Qtdade P</th>
                             <th>Qtdade T</th>
+                            <th>PB</th>
+                            <th>PL</th>
+                            <th>PC</th>
                             <th>FC</th>
                             <th>IC</th>
                             <th>Qt. compra</th>
@@ -501,6 +504,9 @@ function renderFormularioEdicao(ficha) {
                         <th>Un.</th>
                         <th>Qtdade P</th>
                         <th>Qtdade T</th>
+                        <th>PB</th>
+                        <th>PL</th>
+                        <th>PC</th>
                         <th>FC</th>
                         <th>IC</th>
                         <th>Qt. compra</th>
@@ -599,11 +605,46 @@ function adicionarLinhaItemEdicao(item = {}) {
 
         <td>
             <input
+                class="form-control form-control-sm campo-pb"
+                type="number"
+                min="0"
+                step="0.0001"
+                value="${item.pesoBruto ?? ""}"
+                title="Peso Bruto"
+            >
+        </td>
+
+        <td>
+            <input
+                class="form-control form-control-sm campo-pl"
+                type="number"
+                min="0"
+                step="0.0001"
+                value="${item.pesoLiquido ?? ""}"
+                title="Peso Liquido"
+            >
+        </td>
+
+        <td>
+            <input
+                class="form-control form-control-sm campo-pc"
+                type="number"
+                min="0"
+                step="0.0001"
+                value="${item.pesoCozido ?? ""}"
+                title="Peso Cozido"
+            >
+        </td>
+
+        <td>
+            <input
                 class="form-control form-control-sm campo-fc"
                 type="number"
                 min="0"
                 step="0.0001"
                 value="${item.fatorCorrecao ?? ""}"
+                title="FC = PB / PL"
+                readonly
             >
         </td>
 
@@ -614,6 +655,8 @@ function adicionarLinhaItemEdicao(item = {}) {
                 min="0"
                 step="0.0001"
                 value="${item.indiceCoccao ?? ""}"
+                title="IC = PC / PL"
+                readonly
             >
         </td>
 
@@ -676,6 +719,17 @@ function adicionarLinhaItemEdicao(item = {}) {
         .addEventListener("change", () => {
             preencherDadosDoInsumo(tr);
         });
+
+    [
+        "campo-pb",
+        "campo-pl",
+        "campo-pc"
+    ].forEach(classe => {
+        tr.querySelector(`.${classe}`)
+            .addEventListener("input", () => {
+                calcularFatores(tr);
+            });
+    });
 
     [
         "campo-qt-compra",
@@ -845,6 +899,24 @@ function lerItensEdicao() {
                     ".campo-qtd-t"
                 ),
 
+            pesoBruto:
+                lerNumeroDaLinha(
+                    tr,
+                    ".campo-pb"
+                ),
+
+            pesoLiquido:
+                lerNumeroDaLinha(
+                    tr,
+                    ".campo-pl"
+                ),
+
+            pesoCozido:
+                lerNumeroDaLinha(
+                    tr,
+                    ".campo-pc"
+                ),
+
             fatorCorrecao:
                 lerNumeroDaLinha(
                     tr,
@@ -1011,10 +1083,42 @@ function adicionarLinhaItem(item = {}) {
 
         <td>
             <input
+                class="form-control form-control-sm campo-pb"
+                type="number"
+                min="0"
+                step="0.0001"
+                title="Peso Bruto"
+            >
+        </td>
+
+        <td>
+            <input
+                class="form-control form-control-sm campo-pl"
+                type="number"
+                min="0"
+                step="0.0001"
+                title="Peso Liquido"
+            >
+        </td>
+
+        <td>
+            <input
+                class="form-control form-control-sm campo-pc"
+                type="number"
+                min="0"
+                step="0.0001"
+                title="Peso Cozido"
+            >
+        </td>
+
+        <td>
+            <input
                 class="form-control form-control-sm campo-fc"
                 type="number"
                 min="0"
                 step="0.0001"
+                title="FC = PB / PL"
+                readonly
             >
         </td>
 
@@ -1024,6 +1128,8 @@ function adicionarLinhaItem(item = {}) {
                 type="number"
                 min="0"
                 step="0.0001"
+                title="IC = PC / PL"
+                readonly
             >
         </td>
 
@@ -1073,6 +1179,15 @@ function adicionarLinhaItem(item = {}) {
     tr.querySelector(".campo-qtd-t").value =
         item.quantidadeTotal || "";
 
+    tr.querySelector(".campo-pb").value =
+        item.pesoBruto || "";
+
+    tr.querySelector(".campo-pl").value =
+        item.pesoLiquido || "";
+
+    tr.querySelector(".campo-pc").value =
+        item.pesoCozido || "";
+
     tr.querySelector(".campo-fc").value =
         item.fatorCorrecao || "";
 
@@ -1105,6 +1220,17 @@ function adicionarLinhaItem(item = {}) {
         .addEventListener("change", () => {
             preencherDadosDoInsumo(tr);
         });
+
+    [
+        "campo-pb",
+        "campo-pl",
+        "campo-pc"
+    ].forEach(classe => {
+        tr.querySelector(`.${classe}`)
+            .addEventListener("input", () => {
+                calcularFatores(tr);
+            });
+    });
 
     [
         "campo-qt-compra",
@@ -1444,6 +1570,26 @@ function renderItemFicha(item) {
             ? `total ${formatarNumero(item.quantidadeTotal)}`
             : "",
 
+        item.pesoBruto
+            ? `PB ${formatarNumero(item.pesoBruto)}`
+            : "",
+
+        item.pesoLiquido
+            ? `PL ${formatarNumero(item.pesoLiquido)}`
+            : "",
+
+        item.pesoCozido
+            ? `PC ${formatarNumero(item.pesoCozido)}`
+            : "",
+
+        item.fatorCorrecao
+            ? `FC ${formatarNumero(item.fatorCorrecao)}`
+            : "",
+
+        item.indiceCoccao
+            ? `IC ${formatarNumero(item.indiceCoccao)}`
+            : "",
+
         item.quantidadeCompra
             ? `compra ${formatarNumero(item.quantidadeCompra)}`
             : "",
@@ -1507,6 +1653,24 @@ function lerItens() {
                     ".campo-qtd-t"
                 ),
 
+            pesoBruto:
+                lerNumeroDaLinha(
+                    tr,
+                    ".campo-pb"
+                ),
+
+            pesoLiquido:
+                lerNumeroDaLinha(
+                    tr,
+                    ".campo-pl"
+                ),
+
+            pesoCozido:
+                lerNumeroDaLinha(
+                    tr,
+                    ".campo-pc"
+                ),
+
             fatorCorrecao:
                 lerNumeroDaLinha(
                     tr,
@@ -1567,6 +1731,46 @@ function agruparPorCategoria(itens) {
 /* =========================================================
    CALCULAR VALOR PARCIAL
 ========================================================= */
+
+function calcularFatores(tr) {
+    const pesoBruto =
+        lerNumeroDaLinha(
+            tr,
+            ".campo-pb"
+        );
+
+    const pesoLiquido =
+        lerNumeroDaLinha(
+            tr,
+            ".campo-pl"
+        );
+
+    const pesoCozido =
+        lerNumeroDaLinha(
+            tr,
+            ".campo-pc"
+        );
+
+    const campoFc =
+        tr.querySelector(
+            ".campo-fc"
+        );
+
+    const campoIc =
+        tr.querySelector(
+            ".campo-ic"
+        );
+
+    campoFc.value =
+        pesoBruto && pesoLiquido
+            ? (pesoBruto / pesoLiquido).toFixed(4)
+            : "";
+
+    campoIc.value =
+        pesoCozido && pesoLiquido
+            ? (pesoCozido / pesoLiquido).toFixed(4)
+            : "";
+}
 
 function atualizarParcial(tr) {
     const quantidadeCompra =
