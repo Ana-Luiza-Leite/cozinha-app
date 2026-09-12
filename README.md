@@ -1,4 +1,4 @@
-# Cozinha Inteligente
+## Cozinha Inteligente
 
 Sistema web para controle de entradas, saidas, estoque e cadastros de uma cozinha.
 
