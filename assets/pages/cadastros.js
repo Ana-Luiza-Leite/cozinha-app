@@ -234,7 +234,7 @@ function renderLista(storeName, config, dados) {
             <div class="border rounded p-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="mb-0">${config.plural}</h5>
-                    <span class="badge text-bg-success">${dados.length}</span>
+                    <span class="badge text-bg-danger">${dados.length}</span>
                 </div>
                 ${dados.length
                     ? `<div class="list-group list-group-flush">

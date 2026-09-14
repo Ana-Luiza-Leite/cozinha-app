@@ -17,7 +17,7 @@ export function render() {
                 style="max-width: 380px"
                 placeholder="Filtrar alimento"
             >
-            <span id="total_itens_estoque" class="badge text-bg-success"></span>
+            <span id="total_itens_estoque" class="badge text-bg-danger"></span>
         </div>
 
         <div id="lista"></div>
@@ -58,7 +58,7 @@ function renderGrupoEstoque(grupo) {
             </div>
 
             <details class="mt-3">
-                <summary class="btn btn-outline-success btn-sm">Ver detalhes</summary>
+                <summary class="btn btn-outline-danger btn-sm">Ver detalhes</summary>
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead>

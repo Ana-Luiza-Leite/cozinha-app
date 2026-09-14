@@ -331,7 +331,7 @@ function renderDiaCardapio(dia, avaliacoes) {
                         <h5 class="mb-0">${dia}</h5>
                         <div class="small text-muted">${dataDia || "Sem data"}</div>
                     </div>
-                    <span class="badge ${itensDoDia.every(item => item.suficiente) ? "text-bg-success" : "text-bg-danger"}">
+                    <span class="badge ${itensDoDia.every(item => item.suficiente) ? "text-bg-danger" : "text-bg-danger"}">
                         ${itensDoDia.length || 0}
                     </span>
                 </div>
@@ -408,7 +408,7 @@ function renderDetalhesEstoque(item) {
                             <td>${formatarNumero(ingrediente.necessarioTotal)} ${escaparHtml(ingrediente.unidade)}</td>
                             <td>${formatarNumero(ingrediente.disponivel)} ${escaparHtml(ingrediente.unidade)}</td>
                             <td>
-                                <span class="badge ${ingrediente.suficiente ? "text-bg-success" : "text-bg-danger"}">
+                                <span class="badge ${ingrediente.suficiente ? "text-bg-danger" : "text-bg-danger"}">
                                     ${ingrediente.suficiente ? "OK" : "Falta"}
                                 </span>
                             </td>

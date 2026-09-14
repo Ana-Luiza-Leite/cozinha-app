@@ -1400,7 +1400,7 @@ async function atualizarListaFichas() {
                 Fichas cadastradas
             </h4>
 
-            <span class="badge text-bg-success">
+            <span class="badge text-bg-danger">
                 ${fichas.length}
             </span>
         </div>
