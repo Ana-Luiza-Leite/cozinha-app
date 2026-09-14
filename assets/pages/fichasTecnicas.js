@@ -77,7 +77,7 @@ export function render() {
 
                 <button
                     id="btn-adicionar-item"
-                    class="btn btn-outline-success btn-sm"
+                    class="btn btn-outline-danger btn-sm"
                 >
                     Adicionar item
                 </button>
@@ -227,7 +227,7 @@ export function render() {
 
                 <button
                     id="btn-salvar-ficha"
-                    class="btn btn-success"
+                    class="btn btn-danger"
                 >
                     Salvar ficha técnica
                 </button>
@@ -489,7 +489,7 @@ function renderFormularioEdicao(ficha) {
             <button
                 id="btn-adicionar-item-edicao"
                 type="button"
-                class="btn btn-outline-success btn-sm"
+                class="btn btn-outline-danger btn-sm"
             >
                 Adicionar item
             </button>
@@ -532,7 +532,7 @@ function renderFormularioEdicao(ficha) {
             <button
                 id="btn-salvar-edicao"
                 type="button"
-                class="btn btn-success"
+                class="btn btn-danger"
             >
                 Atualizar ficha técnica
             </button>

@@ -239,7 +239,7 @@ export function render() {
         >
 
         <button
-            class="btn btn-success mt-3"
+            class="btn btn-danger mt-3"
             onclick="salvar()"
         >
             Salvar entrada
@@ -933,7 +933,7 @@ function renderFormularioEdicao(
 
             <button
                 type="button"
-                class="btn btn-success"
+                class="btn btn-danger"
                 onclick="salvarEdicaoEntrada(${entrada.id})"
             >
                 Salvar alterações

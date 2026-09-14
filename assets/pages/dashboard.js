@@ -17,7 +17,7 @@ function renderCard(titulo, rota) {
         <div class="col-md-3">
             <div class="card p-3 text-center">
                 <h5>${titulo}</h5>
-                <button class="btn btn-success" onclick="navigate('${rota}')">Ver</button>
+                <button class="btn btn-danger" onclick="navigate('${rota}')">Ver</button>
             </div>
         </div>
     `;

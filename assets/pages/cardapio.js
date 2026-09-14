@@ -59,7 +59,7 @@ export function render() {
                 </div>
 
                 <div class="col-md-3 d-flex gap-2">
-                    <button id="btn-carregar-cardapio" class="btn btn-outline-success flex-fill" type="button">
+                    <button id="btn-carregar-cardapio" class="btn btn-outline-danger flex-fill" type="button">
                         Abrir
                     </button>
                     <button id="btn-novo-cardapio" class="btn btn-outline-secondary flex-fill" type="button">

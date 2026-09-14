@@ -801,7 +801,7 @@ function renderFormularioEdicao(
 
             <button
                 type="button"
-                class="btn btn-success"
+                class="btn btn-danger"
                 onclick="salvarEdicaoSaida(${saida.id})"
             >
                 Salvar alterações

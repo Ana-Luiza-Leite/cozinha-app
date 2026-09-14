@@ -189,7 +189,7 @@ function renderFormulario(storeName, config) {
                 <div class="d-flex gap-2">
                     <button
                         id="${idBotao(storeName)}"
-                        class="btn btn-success flex-fill"
+                        class="btn btn-danger flex-fill"
                         onclick="${nomeFuncaoSalvar(storeName)}()"
                     >
                         Salvar ${config.botao}
@@ -261,7 +261,7 @@ function renderItemLista(storeName, config, item) {
                     ${detalhes ? `<div class="small text-muted">${escaparHtml(detalhes)}</div>` : ""}
                 </div>
                 <button
-                    class="btn btn-outline-success btn-sm"
+                    class="btn btn-outline-danger btn-sm"
                     onclick="editarCadastro('${storeName}', ${item.id})"
                     type="button"
                 >
