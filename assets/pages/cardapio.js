@@ -38,7 +38,7 @@ export function render() {
                 <h2 class="mb-0">Cardapio</h2>
                 <p class="text-muted mb-0">Monte o menu semanal com fichas tecnicas e confira o estoque.</p>
             </div>
-            <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao inicio</button>
+            <button class="btn btn-outline-danger" onclick="navigate('/')">Voltar ao inicio</button>
         </div>
 
         <div class="card p-3 mb-4">
@@ -62,7 +62,7 @@ export function render() {
                     <button id="btn-carregar-cardapio" class="btn btn-outline-danger flex-fill" type="button">
                         Abrir
                     </button>
-                    <button id="btn-novo-cardapio" class="btn btn-outline-secondary flex-fill" type="button">
+                    <button id="btn-novo-cardapio" class="btn btn-outline-danger flex-fill" type="button">
                         Novo
                     </button>
                 </div>
@@ -92,17 +92,17 @@ export function render() {
                 </div>
 
                 <div class="col-md-2">
-                    <button id="btn-adicionar-ficha" class="btn btn-success w-100" type="button">
+                    <button id="btn-adicionar-ficha" class="btn btn-danger w-100" type="button">
                         Adicionar
                     </button>
                 </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <button id="btn-salvar-cardapio" class="btn btn-success" type="button">
+                <button id="btn-salvar-cardapio" class="btn btn-danger" type="button">
                     Salvar cardapio
                 </button>
-                <button id="btn-imprimir-cardapio" class="btn btn-outline-success" type="button">
+                <button id="btn-imprimir-cardapio" class="btn btn-outline-danger" type="button">
                     Imprimir fichas
                 </button>
             </div>
