@@ -83,6 +83,7 @@ export async function getAll(storeName) {
 }
 
 export async function add(storeName, data) {
+    if (storeName !== "usuarios") await exigirAdminParaGravacao();
     const database = await getDB();
 
     return new Promise((resolve, reject) => {
@@ -95,6 +96,10 @@ export async function add(storeName, data) {
 }
 
 export async function put(storeName, data) {
+    if (storeName !== "usuarios") {
+        await exigirAdminParaGravacao();
+        await (await import("../services/confirmacaoAdminService.js")).confirmarAlteracaoAdmin();
+    }
     const database = await getDB();
 
     return new Promise((resolve, reject) => {
@@ -107,6 +112,10 @@ export async function put(storeName, data) {
 }
 
 export async function remove(storeName, id) {
+    if (storeName !== "usuarios") {
+        await exigirAdminParaGravacao();
+        await (await import("../services/confirmacaoAdminService.js")).confirmarAlteracaoAdmin();
+    }
     const database = await getDB();
 
     return new Promise((resolve, reject) => {
@@ -117,6 +126,14 @@ export async function remove(storeName, id) {
         req.onsuccess = () => resolve();
         req.onerror = () => reject(req.error);
     });
+}
+
+async function exigirAdminParaGravacao() {
+    const { getUsuarioAtual } = await import("../services/authService.js");
+    const usuario = await getUsuarioAtual();
+    if (!usuario || usuario.perfil !== "admin") {
+        throw new Error("Somente administradores podem alterar registros.");
+    }
 }
 
 function garantirDadosIniciais(database) {

@@ -89,6 +89,26 @@ Nesse caso, o sistema tambem deve abrir em uma porta local indicada no terminal.
 
 ## Como usar
 
+### Autenticação e perfis
+
+Abra `http://localhost:3000/#/login`. Na primeira execução, use “Primeira configuração”
+para criar o usuário `admin` com uma senha escolhida por você. Essa conta não é redefinida
+ao iniciar o app. Novos membros podem solicitar acesso pelo link de cadastro; o administrador
+aprova ou bloqueia solicitações em **Usuários**. A sessão dura até o fechamento da aba.
+
+Administradores podem alterar dados. Edições e exclusões pedem a senha adicional `8080`;
+novos registros não pedem essa confirmação. Membros têm acesso de consulta e aos relatórios.
+Os relatórios permitem exportar as movimentações mostradas para Excel ou imprimir/salvar em PDF
+pela função do navegador.
+
+**Limite de segurança:** esta aplicação guarda dados e autenticação localmente no navegador.
+O hash PBKDF2 protege a senha armazenada contra leitura direta, mas o código, o IndexedDB e o
+armazenamento local podem ser inspecionados ou alterados por alguém com acesso ao dispositivo.
+O controle de perfil no cliente não substitui autenticação e autorização em um servidor.
+
+As proteções valem para os fluxos da aplicação; não utilize esse armazenamento local como
+controle de acesso para dados sensíveis ou em dispositivos compartilhados sem proteção adicional.
+
 Na barra superior do sistema existem os atalhos principais:
 
 - `Estoque`: mostra o saldo atual calculado pelas entradas e saidas.

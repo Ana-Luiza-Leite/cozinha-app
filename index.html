@@ -31,7 +31,7 @@
 <nav class="navbar navbar-dark bg-danger sticky-top">
   <div class="container-fluid">
     <span class="navbar-brand" onclick="navigate('/')" style="cursor: pointer;">Cozinha Inteligente</span>
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="d-flex gap-2 flex-wrap" data-authenticated>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/estoque')">Estoque</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/entradas')">Entradas</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/saidas')">Saídas</button>
@@ -39,6 +39,9 @@
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/cadastros')">Cadastros</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/relatorios')">Relatórios</button>
       <button class="btn btn-outline-light btn-sm" onclick="navigate('/cardapio')">Cardápio</button>
+      <button class="btn btn-outline-light btn-sm" data-auth-only onclick="navigate('/usuarios')">Usuários</button>
+      <span class="text-white align-self-center" id="usuario-atual"></span>
+      <button class="btn btn-light btn-sm" id="btn-logout">Sair</button>
     </div>
   </div>
 </nav>

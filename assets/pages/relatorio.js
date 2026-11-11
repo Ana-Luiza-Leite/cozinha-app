@@ -1,6 +1,7 @@
 import { getAll } from '../js/db.js';
 import { calcularEstoque } from '../services/estoqueService.js';
 import { formatarData, obterDataOrdenacao } from '../utils/data.js';
+import { exportarTabelaExcel, imprimirRelatorio } from '../utils/exportacao.js';
 
 export function render() {
     return `
@@ -8,7 +9,8 @@ export function render() {
             <h2 class="mb-0">Relatórios</h2>
             <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-outline-secondary" onclick="navigate('/')">Voltar ao início</button>
-                <button class="btn btn-outline-success" onclick="window.print()">Imprimir</button>
+                <button class="btn btn-outline-success" id="exportar-relatorio">Exportar Excel</button>
+                <button class="btn btn-outline-secondary" id="imprimir-relatorio">Imprimir / PDF</button>
             </div>
         </div>
 
@@ -23,6 +25,11 @@ export function render() {
 }
 
 export async function afterRender() {
+    document.getElementById("exportar-relatorio").addEventListener("click", () => {
+        try { exportarTabelaExcel("#movimentacoes table", "relatorio-movimentacoes"); }
+        catch (error) { alert(error.message); }
+    });
+    document.getElementById("imprimir-relatorio").addEventListener("click", imprimirRelatorio);
     const [entradas, saidas, estoque] = await Promise.all([
         getAll("entradas"),
         getAll("saidas"),
